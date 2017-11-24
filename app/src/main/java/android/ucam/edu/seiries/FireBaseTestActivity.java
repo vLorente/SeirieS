@@ -78,8 +78,6 @@ public class FireBaseTestActivity extends AppCompatActivity {
             }
             activarProgressBar();
 
-
-
             name.setText("");
             description.setText("");
             imageButton.setImageResource(R.drawable.imgdefault);

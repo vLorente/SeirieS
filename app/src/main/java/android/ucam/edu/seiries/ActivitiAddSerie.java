@@ -23,7 +23,7 @@ import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.ucam.edu.seiries.beans.Serie;
+import android.ucam.edu.seiries.beans.SerieBean;
 import android.ucam.edu.seiries.db.EventosDB;
 import android.ucam.edu.seiries.db.SeriesDB;
 import android.util.Log;
@@ -34,9 +34,18 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.Calendar;
 
@@ -45,13 +54,21 @@ public class ActivitiAddSerie extends AppCompatActivity {
 
     private static final int NOTIF_ID = 1234;
     private static final int REQUEST_IMAGE_OPEN = 1;
+    private static final String CHILDREN_ID = "series";
+    private static final String TAG = "AÑADIR SERIE";
+    private DatabaseReference ref;
+    private DatabaseReference seriesRef;
+    private StorageReference storageReference;
     private Uri fullPhotoUri;
     private ImageButton imageButton;
     private Spinner spinner_dia;
     private Spinner spinner_estado;
     private Switch option_calendar;
+    private TextView textView1;
+    private ProgressBar progressBar;
     private int dia_seleccionado;
     private int estado_seleccionado;
+    private SerieBean nueva_serie;
     private SeriesDB db;
     private EventosDB dbeventos;
     private int num_caps = -1;
@@ -75,6 +92,10 @@ public class ActivitiAddSerie extends AppCompatActivity {
         spinner_dia = (Spinner) findViewById(R.id.spinner_dia);
         spinner_estado = (Spinner) findViewById(R.id.spinner_estado);
         option_calendar = (Switch) findViewById(R.id.switch_calendar);
+        progressBar = findViewById(R.id.progressBarAddSerie);
+        ref = FirebaseDatabase.getInstance().getReference();
+        seriesRef = ref.child(CHILDREN_ID);
+        storageReference = FirebaseStorage.getInstance().getReference();
 
 
         imageButton = (ImageButton) findViewById(R.id.imageButton);
@@ -127,41 +148,46 @@ public class ActivitiAddSerie extends AppCompatActivity {
         btn_add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (name.getText().toString().equals("") || description.getText().toString().equals("") || num_caps == -1) {
+                if (name.getText().toString().equals("") || description.getText().toString().equals("") || num_caps == -1 || fullPhotoUri == null) {
                     Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
                     intencion.putExtra("RESULT", "NOPE");
                     Toast.makeText(ActivitiAddSerie.this, "Debes rellenar todos los campos, no olvides seleccionar duración", Toast.LENGTH_SHORT).show();
                     startActivity(intencion);
                 } else {
-                    if (fullPhotoUri != null) {
-                        Serie serie = new Serie(name.getText().toString(), description.getText().toString(), fullPhotoUri, dia_seleccionado, estado_seleccionado, num_caps,hay_evento);
-                        db.addSerie(serie);
+                    nueva_serie = new SerieBean(name.getText().toString(), description.getText().toString(), "", dia_seleccionado, estado_seleccionado, num_caps,hay_evento);
 
-                        ///Añadir el evento al calendario en caso de haber seleccionado la opción
-                        if(option_calendar.isChecked()){
-                            nuevoEvento(view,serie.getName(),dia_seleccionado,num_caps,db.getLastSerieId());
-                            //Lanzamos la notificacion de que se ha creado el evento
-                            lanzarNotificacion(serie.getName());
+                    activarProgressBar();
+
+                    name.setText("");
+                    description.setText("");
+                    imageButton.setImageResource(R.drawable.imgdefault);
+
+                    StorageReference filePath = storageReference.child("images").child(fullPhotoUri.getLastPathSegment());
+
+                    filePath.putFile(fullPhotoUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            nueva_serie.setImageUriString(taskSnapshot.getDownloadUrl().toString());
+                            seriesRef.push().setValue(nueva_serie);
+
+                            Uri uri = taskSnapshot.getDownloadUrl();
+                            Log.d(TAG, uri.toString());
+                            Log.e(TAG,taskSnapshot.getDownloadUrl().toString());
+                            desactivarProgressBar();
+                            Toast.makeText(ActivitiAddSerie.this,"Gracias por tu aporte!",Toast.LENGTH_SHORT).show();
                         }
+                    });
 
-                        Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
-                        intencion.putExtra("RESULT", "OK");
-                        startActivity(intencion);
-                    } else {
-                        Serie serie = new Serie(name.getText().toString(), description.getText().toString(), R.drawable.imgdefault, dia_seleccionado, estado_seleccionado, num_caps,hay_evento);
-                        db.addSerie(serie);
-
-                        ///Añadir el evento al calendario en caso de haber seleccionado la opción
-                        if(option_calendar.isChecked()){
-                            calendarPermissions();
-                            nuevoEvento(view,serie.getName(),dia_seleccionado,num_caps,db.getLastSerieId());
-                        }
-
-                        Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
-                        intencion.putExtra("RESULT", "OK");
-                        startActivity(intencion);
+                    ///Añadir el evento al calendario en caso de haber seleccionado la opción
+                    if(option_calendar.isChecked()){
+                        nuevoEvento(view,nueva_serie.getName(),dia_seleccionado,num_caps,db.getLastSerieId());
+                        //Lanzamos la notificacion de que se ha creado el evento
+                        lanzarNotificacion(nueva_serie.getName());
                     }
 
+                    Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
+                    intencion.putExtra("RESULT", "OK");
+                    startActivity(intencion);
                 }
 
             }
@@ -338,6 +364,18 @@ public class ActivitiAddSerie extends AppCompatActivity {
 
         NotificationManager notificationManager =  (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(NOTIF_ID, builder.build());
+
+    }
+
+    public void activarProgressBar(){
+        progressBar.setVisibility(View.VISIBLE);
+        imageButton.setVisibility(View.GONE);
+
+    }
+
+    public void desactivarProgressBar(){
+        progressBar.setVisibility(View.GONE);
+        imageButton.setVisibility(View.VISIBLE);
 
     }
 
