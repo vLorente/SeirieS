@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Detalles" >
+        <EditTextPreference
+            android:dialogTitle="Introduce tu nombre"
+            android:key="Nombre"
+            android:title="Nombre" />
+        <EditTextPreference
+            android:dialogTitle="¿Cual es el personaje con el que te identificas?"
+            android:key="PersonajeFav"
+            android:title="Personaje Favorito" />
+
+        <MultiSelectListPreference
+            android:dialogTitle="Categorías"
+            android:entries="@array/categorias"
+            android:entryValues="@array/categorias_values"
+            android:key="Categorias"
+            android:summary="Selecciona tu categoria/s favoritas."
+            android:title="Categorías" />
+        <CheckBoxPreference
+            android:key="Notificaciones"
+            android:summary="Se notificarán los nuevos capítulos de las series que sigas."
+            android:title="Notificaciones" />
+        <CheckBoxPreference
+            android:key="Privada"
+            android:summary="si tu cuenta es privada, solo las personas que apruebes prodrán ver tus series."
+            android:title="Cuenta Privada" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Extra" >
+
+        <ListPreference
+            android:dialogTitle="Indicar Opinión"
+            android:entries="@array/opinion"
+            android:entryValues="@array/opinion_values"
+            android:key="Nivel"
+            android:summary="¿Cómo describirías esta aplicación?"
+            android:title="Opinión" />
+    </PreferenceCategory>
+</PreferenceScreen>

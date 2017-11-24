@@ -1,0 +1,344 @@
+package android.ucam.edu.seiries;
+
+import android.Manifest;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.ucam.edu.seiries.beans.Serie;
+import android.ucam.edu.seiries.db.EventosDB;
+import android.ucam.edu.seiries.db.SeriesDB;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.NumberPicker;
+import android.widget.Spinner;
+import android.widget.Switch;
+import android.widget.Toast;
+
+import java.util.Calendar;
+
+
+public class ActivitiAddSerie extends AppCompatActivity {
+
+    private static final int NOTIF_ID = 1234;
+    private static final int REQUEST_IMAGE_OPEN = 1;
+    private Uri fullPhotoUri;
+    private ImageButton imageButton;
+    private Spinner spinner_dia;
+    private Spinner spinner_estado;
+    private Switch option_calendar;
+    private int dia_seleccionado;
+    private int estado_seleccionado;
+    private SeriesDB db;
+    private EventosDB dbeventos;
+    private int num_caps = -1;
+    private int num_picker;
+    private int hay_evento;
+    private static int MY_PERMISSIONS_REQUEST_READ_CONTACTS=1;
+    private static String[] PERMISSIONS = {Manifest.permission.READ_CALENDAR,Manifest.permission.WRITE_CALENDAR};
+
+
+    ///// COMIENZO ON CREATE /////
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.add_serie);
+
+        db = new SeriesDB(this);
+        dbeventos = new EventosDB(this);
+
+        final EditText name = (EditText) findViewById(R.id.editText2);
+        final EditText description = (EditText) findViewById(R.id.editText3);
+        spinner_dia = (Spinner) findViewById(R.id.spinner_dia);
+        spinner_estado = (Spinner) findViewById(R.id.spinner_estado);
+        option_calendar = (Switch) findViewById(R.id.switch_calendar);
+
+
+        imageButton = (ImageButton) findViewById(R.id.imageButton);
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                selectImage();
+                            }
+        });
+
+        spinner_dia.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                dia_seleccionado = i;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                dia_seleccionado = -1;
+            }
+        });
+
+        spinner_estado.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                estado_seleccionado = i;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                estado_seleccionado = -1;
+            }
+        });
+
+        option_calendar.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    calendarPermissions();
+                    hay_evento=1;
+                }
+                else {
+                    hay_evento=0;
+                }
+            }
+        });
+
+        final Button btn_add = (Button) findViewById(R.id.button19);
+        btn_add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (name.getText().toString().equals("") || description.getText().toString().equals("") || num_caps == -1) {
+                    Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
+                    intencion.putExtra("RESULT", "NOPE");
+                    Toast.makeText(ActivitiAddSerie.this, "Debes rellenar todos los campos, no olvides seleccionar duración", Toast.LENGTH_SHORT).show();
+                    startActivity(intencion);
+                } else {
+                    if (fullPhotoUri != null) {
+                        Serie serie = new Serie(name.getText().toString(), description.getText().toString(), fullPhotoUri, dia_seleccionado, estado_seleccionado, num_caps,hay_evento);
+                        db.addSerie(serie);
+
+                        ///Añadir el evento al calendario en caso de haber seleccionado la opción
+                        if(option_calendar.isChecked()){
+                            nuevoEvento(view,serie.getName(),dia_seleccionado,num_caps,db.getLastSerieId());
+                            //Lanzamos la notificacion de que se ha creado el evento
+                            lanzarNotificacion(serie.getName());
+                        }
+
+                        Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
+                        intencion.putExtra("RESULT", "OK");
+                        startActivity(intencion);
+                    } else {
+                        Serie serie = new Serie(name.getText().toString(), description.getText().toString(), R.drawable.imgdefault, dia_seleccionado, estado_seleccionado, num_caps,hay_evento);
+                        db.addSerie(serie);
+
+                        ///Añadir el evento al calendario en caso de haber seleccionado la opción
+                        if(option_calendar.isChecked()){
+                            calendarPermissions();
+                            nuevoEvento(view,serie.getName(),dia_seleccionado,num_caps,db.getLastSerieId());
+                        }
+
+                        Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
+                        intencion.putExtra("RESULT", "OK");
+                        startActivity(intencion);
+                    }
+
+                }
+
+            }
+        });
+
+        final Button btn_caps = (Button) findViewById(R.id.btn_capitulos);
+        btn_caps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                numberPickerDialog();
+            }
+        });
+
+        db.close();
+        dbeventos.close();
+    }
+
+    ///// FIN ON CREATE /////
+
+    //Función para abrir el explorador y seleccionar la imagen
+    public void selectImage() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("image/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(Intent.createChooser(intent, "Selecciona Imagen"), REQUEST_IMAGE_OPEN);
+    }
+
+    //Evaluamos lo que nos devuelve la activity de selección de imagen
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_IMAGE_OPEN && resultCode == RESULT_OK) {
+            fullPhotoUri = data.getData();
+
+            Log.wtf("INFO", "Resultado OK");
+            imageButton.setImageURI(fullPhotoUri);
+        } else {
+            Log.wtf("INFO", "Resultado NOPE");
+        }
+    }
+
+    private void numberPickerDialog() {
+        NumberPicker numberPicker = new NumberPicker(this);
+        numberPicker.setMaxValue(999);
+        numberPicker.setMinValue(1);
+        NumberPicker.OnValueChangeListener numListener = new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker piker, int oldValue, int newValue) {
+                num_picker = newValue;
+            }
+        };
+        numberPicker.setOnValueChangedListener(numListener);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this).setView(numberPicker);
+        builder.setTitle("Capítulos");
+        builder.setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                num_caps = num_picker;
+            }
+        });
+
+        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+        builder.show();
+    }
+
+    //Agregar un nuevo evento a Calendar mediante Content Provider
+    public void nuevoEvento(View v,String name_serie, @Nullable int day, @Nullable int num_caps, int id_serie){
+
+        try{
+            long calID = 1;
+            Calendar mCalendar = Calendar.getInstance();
+            int i = mCalendar.get(Calendar.WEEK_OF_MONTH);
+            mCalendar.set(Calendar.WEEK_OF_MONTH, ++i);
+
+            int dayMod = (day+2)%7;
+            Log.wtf("Resultado", "La suma modulo 7 es: "+dayMod);
+            mCalendar.set(Calendar.DAY_OF_WEEK,dayMod);
+            mCalendar.set(Calendar.HOUR_OF_DAY,15);
+
+
+            long my_day_event = mCalendar.getTimeInMillis();
+            long end_event = my_day_event + 1000 * 60 * 60; // For next 1hr
+
+            ContentResolver cr = getContentResolver();
+            ContentValues values = new ContentValues();
+            values.put(Events.DTSTART, my_day_event);
+            values.put(Events.DTEND, end_event);
+            values.put(Events.RRULE,"FREQ=WEEKLY;COUNT="+num_caps);
+            values.put(Events.TITLE, name_serie);
+            values.put(Events.DESCRIPTION, "La duración de la serie es de "+num_caps+"capítulos.");
+            values.put(Events.CALENDAR_ID, calID);
+            values.put(Events.EVENT_TIMEZONE, "Europe/Madrid");
+            Uri uri = cr.insert(Events.CONTENT_URI, values);
+
+            // id del evento importante guardar proximament en base de datos vinculado a la serie
+            long eventID = Long.parseLong(uri.getLastPathSegment());
+
+            //Guardamos el evento en base de datos
+
+            dbeventos.addEvent(id_serie,eventID);
+
+            Log.wtf("ID del Evento", "id  "+eventID);
+        }
+        catch (SecurityException e){
+            Log.wtf("Creando Nuevo Evento",e.toString());
+        }
+
+    }
+
+
+
+
+    //Solicitar permisos de lectura y escrituda en calendario
+    //en tiempo de ejecución
+    private void calendarPermissions() {
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(ActivitiAddSerie.this,
+                Manifest.permission.WRITE_CALENDAR)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(ActivitiAddSerie.this,
+                    Manifest.permission.WRITE_CALENDAR) || ActivityCompat.shouldShowRequestPermissionRationale(ActivitiAddSerie.this,
+                    Manifest.permission.READ_CALENDAR)) {
+
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(ActivitiAddSerie.this, PERMISSIONS, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+    }
+
+    public void lanzarNotificacion(String name_serie){
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_logo)
+                        .setContentTitle(getString(R.string.notification_title))
+                        .setContentText(name_serie)
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        //Color del led de notificacion
+                        .setLights(Color.CYAN, 1, 0)
+                        //Sonido de la notificacion
+                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                        .setAutoCancel(true);
+        //Creamos un intent para llamar a la nueva activity
+
+        Uri.Builder uri = CalendarContract.CONTENT_URI.buildUpon();
+        uri.appendPath("time");
+        ContentUris.appendId(uri, Calendar.getInstance().getTimeInMillis());
+        Intent intent = new Intent(Intent.ACTION_VIEW)
+                .setData(uri.build());
+
+        TaskStackBuilder taskStackBuilder = TaskStackBuilder.create(this);
+        taskStackBuilder.addNextIntent(intent);
+
+        PendingIntent pendingIntent = taskStackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(pendingIntent);
+
+
+        NotificationManager notificationManager =  (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(NOTIF_ID, builder.build());
+
+    }
+
+}

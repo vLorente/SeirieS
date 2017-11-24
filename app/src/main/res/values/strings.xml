@@ -1,0 +1,180 @@
+<resources>
+    <string name="app_name">SeiЯRieS</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="agenda">Agenda</string>
+    <string name="series">Mis series</string>
+    <string name="action_settings">Configuración</string>
+    <string name="home">Inicio</string>
+    <string name="acercaDe">Acerca De</string>
+    <string name="slogan">No olvides ver tus series favotiras\n¡Que no te hagan Spoiler!</string>
+
+    <string name="points">Punteros actuales: </string>
+    <string name="notification_title">Nueva serie añadida al calendario</string>
+
+
+    <string name="text1">Elige una serie</string>
+    <string name="text2">¿Qué temporada vas a ver?</string>
+    <string name="text3">Día</string>
+    <string name="text4">¿Qué día del mes vas a verla?</string>
+    <string name="text_wellcome">BIENVENIDO</string>
+    <string name="btn_next">Siguiente</string>
+    <string name="btn_previous">Volver</string>
+    <string name="btn_exit">Salir</string>
+    <string name="btn_go">Entrar</string>
+    <string name="btn_login">Iniciar Sesión</string>
+    <string name="btn_option1">Agenda de Series</string>
+    <string name="btn_about">Acerca de...</string>
+    <string-array name="series">
+        <item>Juego de Tronos</item>
+        <item>Rick y Morty</item>
+        <item>Halt and Catch Fire</item>
+    </string-array>
+
+    <string-array name="temps">
+        <item>Temporada 1</item>
+        <item>Temporada 2</item>
+        <item>Temporada 3</item>
+        <item>Temporada 4</item>
+        <item>Temporada 5</item>
+    </string-array>
+
+    <string-array name="opinion">
+        <item>Excelente</item>
+        <item>Buena</item>
+        <item>Normal</item>
+        <item>Mala</item>
+        <item>Muy Mala</item>
+    </string-array>
+
+    <string-array name="opinion_values">
+        <item>01</item>
+        <item>02</item>
+        <item>03</item>
+        <item>04</item>
+        <item>05</item>
+    </string-array>
+
+    <string-array name="categorias">
+        <item>Cienfia Ficción</item>
+        <item>Animación</item>
+        <item>Drama</item>
+        <item>Romance</item>
+        <item>Comedia</item>
+        <item>Terror</item>
+    </string-array>
+
+    <string-array name="categorias_values">
+        <item>01</item>
+        <item>02</item>
+        <item>03</item>
+        <item>04</item>
+        <item>05</item>
+        <item>06</item>
+    </string-array>
+
+
+    <string-array name="estdos_array">
+        <item>En Emisión</item>
+        <item>Finalizada</item>
+        <item>Cancelada</item>
+    </string-array>
+
+    <string-array name="days">
+        <item>Lunes</item>
+        <item>Martes</item>
+        <item>Miércoles</item>
+        <item>Jueves</item>
+        <item>Viernes</item>
+        <item>Sábado</item>
+        <item>Domingo</item>
+    </string-array>
+
+    <string name="name">Usuario</string>
+    <string name="pass">Contraseña</string>
+    <string name="login">Acceso</string>
+    <string name="login2">Acceder</string>
+    <string name="not_login">Aún no has iniciado sesión</string>
+    <string name="log">Has iniciado sesión</string>
+    <string name="log_err">Error al iniciar sesión, datos no válidos</string>
+    <string name="result_title">Anotado en tu agenda</string>
+    <string name="ok">OK</string>
+    <string name="accept">Aceptar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="back">Atrás</string>
+    <string name="call">Llamada Tlfno</string>
+    <string name="photo">Foto</string>
+    <string name="showMap">Ver Mapa</string>
+    <string name="conditions">Aceptar/Declinar condiciones de uso</string>
+    <string name="show_conditions">Ver Condiciones</string>
+    <string name="btn_ok_conditions">Aceptar condiciones</string>
+    <string name="btn_nope_conditions">Declinar condiciones</string>
+    <string name="ok_conditions">Has aceptado las condiciones de uso</string>
+    <string name="nope_conditions">Aún NO has aceptado las condiciones de uso</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="btn_lista_series">Listado de Series</string>
+    <string name="image">Logo de la serie</string>
+
+    <string name="titleNS">Nueva Serie</string>
+    <string name="nameNS">Nombre</string>
+    <string name="nameNSH">Serie</string>
+    <string name="imageNS">Seleccionar Imagen</string>
+    <string name="descriptionNS">Sinopsis</string>
+    <string name="add">Añadir</string>
+    <string name="opinion">¿Cómo describirías esta serie?</string>
+    <string name="file1">Ficheros internos</string>
+    <string name="file2">Ficheros externos</string>
+    <string name="load">Cargar</string>
+    <string name="save">Guardar</string>
+    <string name="file_title1">Guardar en fichero interno</string>
+    <string name="file_title2">Guardar en fichero externo</string>
+    <string name="edtxt_inter">Introduce el texto a guardar</string>
+    <string name="estreno">Selecciona el día que sale el capítulo</string>
+    <string name="estado_spinner">¿En que estado se encuentra la serie?</string>
+    <string name="titleUS">Actualizar Serie</string>
+    <string name="update">Editar</string>
+    <string name="duracion">Duración</string>
+    <string name="dur">Selecciona la duración de la serie</string>
+    <string name="acti_noti_on">Activar evento en el calendario</string>
+    <string name="acti_noti">¿Activar eventos en el calendario?</string>
+    <string name="acti_noti_off">Desactivar evento en el calendario</string>
+    <string name="test_event">Pruebas con Eventos Calendar</string>
+    <string name="add_event">Añadir Evento</string>
+    <string name="admin">admin</string>
+    <string name="available">Series disponibles:</string>
+    <string name="entertainment">Entretenimiento</string>
+    <string name="pantalla">Pantalla - MultiTouch</string>
+    <string name="sensor">Sensores</string>
+    <string name="toastText">Se ha eliminado el eveto del calendario</string>
+    <string name="multimedia">Multimedia</string>
+    <string name="btn_sensores">¿Qué sensores tiene mi dispositivo?</string>
+    <string name="acelerometro">Acelerómetro</string>
+    <string name="list_sensor">Sensores Disponibles</string>
+    <string name="proximity_msg">¡Pon el dedo en la Cámara Frontal!</string>
+    <string name="btn_proximity">Sensor de Proximidad</string>
+    <string name="btn_audio">Audio</string>
+    <string name="btn_video">Vídeo</string>
+    <string name="btn_animation">Animation Tween</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="stop">Stop</string>
+    <string name="song_title">Gas Panic!</string>
+    <string name="artist_song">Oasis</string>
+    <string name="player_error">Error al inicializar el reproductor de Youtube: %s</string>
+    <string name="btn_youtube">Vídeo de Youtube</string>
+    <string name="play_video">Reproducir Vídeo</string>
+    <string name="btn_play_animation">Lanzar Animación</string>
+
+    //FACEBOOK STRINGS
+    <string name="facebook_app_id" translatable="false">751748408357434</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb751748408357434</string>
+    <string name="login_cancel">Se canceló la operación</string>
+    <string name="login_error">Ocurrió un error durante la operación</string>
+    <string name="close_session">Cerrar Sesión</string>
+    <string name="login_not_success">No se pudo iniciar sesión</string>
+    <string name="email">Correo electrónico</string>
+    <string name="not_logout_google">No se pudo cerrar sesión</string>
+    //END FACEBOOK STRINGS
+</resources>

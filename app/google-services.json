@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "227292549175",
+    "firebase_url": "https://seiries-db.firebaseio.com",
+    "project_id": "seiries-db",
+    "storage_bucket": "seiries-db.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227292549175:android:dadc1751fd8f04a5",
+        "android_client_info": {
+          "package_name": "android.ucam.edu.seiries"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "227292549175-i1pqqv8egnak47o492ij1t2mbiq0io2g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "android.ucam.edu.seiries",
+            "certificate_hash": "3ee468c10b5ebca9f06ef811dcb03a70edc8e41d"
+          }
+        },
+        {
+          "client_id": "227292549175-g37e5gb28crgbt43jd2si7dftfoin9jb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-p48my4vL_7-M6R8sYfRZm_byUvNDB8g"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "227292549175-g37e5gb28crgbt43jd2si7dftfoin9jb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

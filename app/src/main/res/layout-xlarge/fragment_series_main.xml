@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" android:baselineAligned="false">
+
+    <fragment
+        android:id="@+id/FrgListado"
+        class="android.ucam.edu.seiries.FragmentListaSeries"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="25"
+        tools:layout="@layout/fragment_lista_series" />
+
+    <fragment
+        android:id="@+id/FrgDetalle"
+        class="android.ucam.edu.seiries.FragmentDetalle"
+        android:layout_width="217dp"
+        android:layout_height="match_parent"
+        android:layout_weight="25"
+        tools:layout="@layout/fragment_series_detalle" />
+
+
+</LinearLayout>
