@@ -34,12 +34,11 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -64,8 +63,7 @@ public class ActivitiAddSerie extends AppCompatActivity {
     private Spinner spinner_dia;
     private Spinner spinner_estado;
     private Switch option_calendar;
-    private TextView textView1;
-    private ProgressBar progressBar;
+    private LottieAnimationView animacion;
     private int dia_seleccionado;
     private int estado_seleccionado;
     private SerieBean nueva_serie;
@@ -92,12 +90,10 @@ public class ActivitiAddSerie extends AppCompatActivity {
         spinner_dia = (Spinner) findViewById(R.id.spinner_dia);
         spinner_estado = (Spinner) findViewById(R.id.spinner_estado);
         option_calendar = (Switch) findViewById(R.id.switch_calendar);
-        progressBar = findViewById(R.id.progressBarAddSerie);
         ref = FirebaseDatabase.getInstance().getReference();
         seriesRef = ref.child(CHILDREN_ID);
         storageReference = FirebaseStorage.getInstance().getReference();
-
-
+        animacion = (LottieAnimationView) findViewById(R.id.lottieAnimation);
         imageButton = (ImageButton) findViewById(R.id.imageButton);
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -156,7 +152,7 @@ public class ActivitiAddSerie extends AppCompatActivity {
                 } else {
                     nueva_serie = new SerieBean(name.getText().toString(), description.getText().toString(), "", dia_seleccionado, estado_seleccionado, num_caps,hay_evento);
 
-                    activarProgressBar();
+                    activarAnimation();
 
                     name.setText("");
                     description.setText("");
@@ -173,7 +169,7 @@ public class ActivitiAddSerie extends AppCompatActivity {
                             Uri uri = taskSnapshot.getDownloadUrl();
                             Log.d(TAG, uri.toString());
                             Log.e(TAG,taskSnapshot.getDownloadUrl().toString());
-                            desactivarProgressBar();
+                            desactivarAnimation();
                             Toast.makeText(ActivitiAddSerie.this,"Gracias por tu aporte!",Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -209,9 +205,8 @@ public class ActivitiAddSerie extends AppCompatActivity {
 
     //Función para abrir el explorador y seleccionar la imagen
     public void selectImage() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(Intent.createChooser(intent, "Selecciona Imagen"), REQUEST_IMAGE_OPEN);
     }
 
@@ -367,16 +362,14 @@ public class ActivitiAddSerie extends AppCompatActivity {
 
     }
 
-    public void activarProgressBar(){
-        progressBar.setVisibility(View.VISIBLE);
-        imageButton.setVisibility(View.GONE);
-
+    public void activarAnimation(){
+        animacion.setVisibility(View.VISIBLE);
+        animacion.playAnimation();
     }
 
-    public void desactivarProgressBar(){
-        progressBar.setVisibility(View.GONE);
-        imageButton.setVisibility(View.VISIBLE);
-
+    public void desactivarAnimation(){
+        animacion.pauseAnimation();
+        animacion.setVisibility(View.GONE);
     }
 
 }
