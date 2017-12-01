@@ -1,37 +1,36 @@
 package android.ucam.edu.seiries;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.ucam.edu.seiries.beans.Serie;
-import android.ucam.edu.seiries.db.SeriesDB;
+import android.ucam.edu.seiries.beans.SerieBean;
+import android.ucam.edu.seiries.customs.CustomAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 
 
 public class FragmentListaSeries extends Fragment {
 
+    private static final String SERIES_ID ="series";
     private Resources res;
-    private ArrayList<Serie> datos;
-    DatabaseReference dbRef;
-    DatabaseReference seriesRef;
-    private SeriesDB db;
-
+    private ArrayList<SerieBean> datos = new ArrayList<>();
+    private DatabaseReference dbRef;
+    private DatabaseReference seriesRef;
     private ListView lstListado;
-    private AdaptadorSeries adaptadorSeries;
+    private CustomAdapter adaptadorSeries;
 
     private SeriesListener listener;
 
@@ -48,13 +47,41 @@ public class FragmentListaSeries extends Fragment {
 
         res = getResources();
 
-        db = new SeriesDB(getContext());
-
-        datos = db.getAllSeries();
+        dbRef = FirebaseDatabase.getInstance().getReference();
+        seriesRef = dbRef.child(SERIES_ID);
 
         lstListado = getView().findViewById(R.id.lstSeries) ;
 
-        adaptadorSeries = new AdaptadorSeries(this);
+        adaptadorSeries = new CustomAdapter(getActivity(),datos);
+
+        seriesRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                datos.add(dataSnapshot.getValue(SerieBean.class));
+                adaptadorSeries.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                datos.remove(dataSnapshot.getValue(SerieBean.class));
+                adaptadorSeries.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         lstListado.setAdapter(adaptadorSeries);
 
@@ -63,7 +90,7 @@ public class FragmentListaSeries extends Fragment {
             public void onItemClick(AdapterView<?> list, View view, int pos, long id) {
                 if (listener!=null) {
                     listener.onSerieSeleccionada((
-                            (Serie)lstListado.getAdapter().getItem(pos)));
+                            (SerieBean)lstListado.getAdapter().getItem(pos)));
                 }
             }
         });
@@ -78,43 +105,13 @@ public class FragmentListaSeries extends Fragment {
                 startActivity(intent);
             }
         });
-
-        db.close();
     }
 
     
 
-    class AdaptadorSeries extends ArrayAdapter<Serie> {
-
-        Activity context;
-
-        AdaptadorSeries(Fragment context) {
-            super(context.getActivity(), R.layout.mylistview, datos);
-            this.context = context.getActivity();
-        }
-
-        public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = context.getLayoutInflater();
-            View rowView= inflater.inflate(R.layout.mylistview, null, true);
-            TextView txtTitle = rowView.findViewById(R.id.txt);
-            txtTitle.setText(datos.get(position).getName());
-
-            try {
-                ImageView imageView = rowView.findViewById(R.id.img);
-                imageView.setImageResource(datos.get(position).getImageId());
-            }
-            catch (Exception e){
-                ImageView imageView = rowView.findViewById(R.id.img);
-                imageView.setImageURI(datos.get(position).getImageUri());
-            }
-
-
-            return(rowView);
-        }
-    }
 
     public interface SeriesListener {
-        void onSerieSeleccionada(Serie c);
+        void onSerieSeleccionada(SerieBean c);
     }
 
     public void setSeriesListener(SeriesListener listener) {

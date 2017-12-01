@@ -185,7 +185,9 @@ public class ActivitiAddSerie extends AppCompatActivity {
                         lanzarNotificacion(nueva_serie.getName());
                     }
 
+                    //Incrementamos en 1 el contador de la ID
                     counterRef.setValue(contador+1);
+
                     Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
                     intencion.putExtra("RESULT", "OK");
                     startActivity(intencion);

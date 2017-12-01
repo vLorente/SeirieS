@@ -7,12 +7,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract.Events;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.ucam.edu.seiries.beans.Serie;
-import android.ucam.edu.seiries.db.EventosDB;
-import android.ucam.edu.seiries.db.SeriesDB;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,12 +16,19 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 
 public class FragmentDetalle extends Fragment {
 
-    private int id;
+    private long id;
     private static final String DEBUG_TAG = "FragmentDetalle";
+    private URL url;
+    private Uri uri;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -37,19 +40,28 @@ public class FragmentDetalle extends Fragment {
         super.onActivityCreated(savedInstanceState);
     }
 
-    public void mostrarDetalle(final int id, String title, String texto, int image, @Nullable Uri imageUri) {
+    public void mostrarDetalle(final long id, String title, String texto, String imageUirDownload) {
         this.id=id;
         TextView txtTitle = (TextView)getView().findViewById(R.id.textTitle);
         txtTitle.setText(title);
         TextView txtDetalle = (TextView)getView().findViewById(R.id.textDetalle);
         txtDetalle.setText(texto);
         ImageView imageDetalle = (ImageView) getView().findViewById(R.id.imgDetalle);
+
         try {
-            imageDetalle.setImageResource(image);
+            url = new URL(imageUirDownload);
+            uri = Uri.parse(url.toURI().toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
         }
-        catch (Exception e){
-            imageDetalle.setImageURI(imageUri);
-        }
+
+        Glide.with(getContext())
+                .load(uri)
+                .fitCenter()
+                .centerCrop()
+                .into(imageDetalle);
 
         FloatingActionButton btn_preferences = getView().findViewById(R.id.btn_info);
         btn_preferences.setOnClickListener(new View.OnClickListener() {
@@ -72,17 +84,20 @@ public class FragmentDetalle extends Fragment {
                         .setPositiveButton("Sí", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                SeriesDB db = new SeriesDB(getContext());
-                                Serie serie = db.getSerieById(id);
-                                db.deleteSerie(id);
-                                db.close();
-                                if(serie.getEvento()==1){
-                                    Log.wtf("Borrando Serie","Tiene evento la serie "+id+"? "+serie.getEvento());
-                                    EventosDB eventosDB = new EventosDB(getContext());
-                                    long eventID=eventosDB.deleteEvent(serie.getId());
-                                    eventosDB.close();
-                                    deleteEventById(eventID);
-                                }
+
+                                //BORRRAR SERIE////
+
+//                                SeriesDB db = new SeriesDB(getContext());
+//                                Serie serie = db.getSerieById(id);
+//                                db.deleteSerie(id);
+//                                db.close();
+//                                if(serie.getEvento()==1){
+//                                    Log.wtf("Borrando Serie","Tiene evento la serie "+id+"? "+serie.getEvento());
+//                                    EventosDB eventosDB = new EventosDB(getContext());
+//                                    long eventID=eventosDB.deleteEvent(serie.getId());
+//                                    eventosDB.close();
+//                                    deleteEventById(eventID);
+//                                }
                                 Intent intent = new Intent(getContext(), FragmentSeriesMain.class);
                                 startActivity(intent);
                             }
