@@ -1,18 +1,19 @@
 package android.ucam.edu.seiries;
 
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.ucam.edu.seiries.beans.SerieBean;
 import android.ucam.edu.seiries.customs.CustomAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -25,12 +26,13 @@ import java.util.ArrayList;
 public class FragmentListaSeries extends Fragment {
 
     private static final String SERIES_ID ="series";
-    private Resources res;
+    private static final String TAG ="FRAGMENT LISTA SERIES";
     private ArrayList<SerieBean> datos = new ArrayList<>();
     private DatabaseReference dbRef;
     private DatabaseReference seriesRef;
     private ListView lstListado;
     private CustomAdapter adaptadorSeries;
+    private LottieAnimationView animacion;
 
     private SeriesListener listener;
 
@@ -45,31 +47,46 @@ public class FragmentListaSeries extends Fragment {
     public void onActivityCreated(Bundle state) {
         super.onActivityCreated(state);
 
-        res = getResources();
 
+        animacion = getView().findViewById(R.id.animationLoadSeries);
         dbRef = FirebaseDatabase.getInstance().getReference();
         seriesRef = dbRef.child(SERIES_ID);
-
         lstListado = getView().findViewById(R.id.lstSeries) ;
 
         adaptadorSeries = new CustomAdapter(getActivity(),datos);
 
+
         seriesRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                activarAnimation();
                 datos.add(dataSnapshot.getValue(SerieBean.class));
                 adaptadorSeries.notifyDataSetChanged();
+                desactivarAnimation();
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
+                activarAnimation();
+                long id = dataSnapshot.getValue(SerieBean.class).getId();
+                Log.e(TAG, "El id de la serie es "+id);
+                for (SerieBean serie : datos){
+                    if(serie.getId() == id){
+                        datos.remove(serie);
+                        break;
+                    }
+                }
+                datos.add(dataSnapshot.getValue(SerieBean.class));
+                adaptadorSeries.notifyDataSetChanged();
+                desactivarAnimation();
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
+                activarAnimation();
                 datos.remove(dataSnapshot.getValue(SerieBean.class));
                 adaptadorSeries.notifyDataSetChanged();
+                desactivarAnimation();
             }
 
             @Override
@@ -82,6 +99,8 @@ public class FragmentListaSeries extends Fragment {
 
             }
         });
+
+
 
         lstListado.setAdapter(adaptadorSeries);
 
@@ -107,8 +126,6 @@ public class FragmentListaSeries extends Fragment {
         });
     }
 
-    
-
 
     public interface SeriesListener {
         void onSerieSeleccionada(SerieBean c);
@@ -119,5 +136,14 @@ public class FragmentListaSeries extends Fragment {
     }
 
 
+    public void activarAnimation(){
+        animacion.setVisibility(View.VISIBLE);
+        lstListado.setVisibility(View.GONE);
+    }
+
+    public void desactivarAnimation(){
+        animacion.setVisibility(View.GONE);
+        lstListado.setVisibility(View.VISIBLE);
+    }
 
 }

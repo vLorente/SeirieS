@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract.Events;
@@ -40,12 +41,25 @@ public class FragmentDetalle extends Fragment {
         super.onActivityCreated(savedInstanceState);
     }
 
-    public void mostrarDetalle(final long id, String title, String texto, String imageUirDownload) {
+    public void mostrarDetalle(final long id, String title, String texto, String imageUirDownload, int capitulos, int evento, int estado, int dia) {
         this.id=id;
         TextView txtTitle = (TextView)getView().findViewById(R.id.textTitle);
         txtTitle.setText(title);
         TextView txtDetalle = (TextView)getView().findViewById(R.id.textDetalle);
         txtDetalle.setText(texto);
+        Resources res = getResources();
+        TextView txtEstado = (TextView)getView().findViewById(R.id.txt_estado);
+        String[] estados = res.getStringArray(R.array.estdos_array);
+        txtEstado.setText(estados[estado]);
+        TextView txtCapitulos = getView().findViewById(R.id.txt_capitulos);
+        txtCapitulos.setText(""+capitulos);
+        TextView txtEvento = getView().findViewById(R.id.txt_evento);
+        String[] dias = res.getStringArray(R.array.days);
+        if(evento==0){
+            txtEvento.setText("No hay recordatorio");
+        } else {
+            txtEvento.setText("Recordatorio los "+dias[dia]);
+        }
         ImageView imageDetalle = (ImageView) getView().findViewById(R.id.imgDetalle);
 
         try {

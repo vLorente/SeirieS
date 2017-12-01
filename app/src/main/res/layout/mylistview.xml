@@ -21,7 +21,7 @@
         android:layout_weight="1"
         android:fontFamily="sans-serif-condensed"
         android:textAlignment="textStart"
-        android:textColor="@android:color/holo_orange_light"
+        android:textColor="@android:color/holo_blue_light"
         android:textIsSelectable="false"
         android:textSize="20sp" />
 

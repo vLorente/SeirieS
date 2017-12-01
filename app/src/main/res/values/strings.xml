@@ -176,5 +176,9 @@
     <string name="login_not_success">No se pudo iniciar sesión</string>
     <string name="email">Correo electrónico</string>
     <string name="not_logout_google">No se pudo cerrar sesión</string>
+    <string name="estado">Estado:</string>
+    <string name="caps">Capítulos:</string>
+    <string name="event_label">¿Tiene evento en el calendario?</string>
+    <string name="sinopsis">Sinopsis</string>
     //END FACEBOOK STRINGS
 </resources>
