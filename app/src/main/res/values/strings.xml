@@ -4,8 +4,8 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="agenda">Agenda</string>
-    <string name="series">Mis series</string>
+    <string name="agenda">Mi Agenda</string>
+    <string name="series">Todas las Series</string>
     <string name="action_settings">Configuración</string>
     <string name="home">Inicio</string>
     <string name="acercaDe">Acerca De</string>

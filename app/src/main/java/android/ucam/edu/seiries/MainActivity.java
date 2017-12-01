@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_home) {
 
         } else if (id == R.id.nav_diary) {
-
+            startActivity(new Intent(this, MiAgenda.class));
         } else if (id == R.id.nav_series) {
             startActivity(new Intent(this,FragmentSeriesMain.class));
         } else if (id == R.id.nav_about) {

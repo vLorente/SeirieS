@@ -136,11 +136,12 @@
                 android:value=".MultimediaActivity" />
         </activity>
         <activity android:name=".LoginActivity" />
-        <activity android:name=".FireBaseTestActivity"
+        <activity
+            android:name=".FireBaseTestActivity"
             android:parentActivityName=".MainActivity">
-        <meta-data
-            android:name="android.support.PARENT_ACTIVITY"
-            android:value=".MainActivity" />
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
         </activity>
 
         <service android:name=".firebase.MiFirebaseNotificationService">
@@ -154,12 +155,14 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".FirebaseTestMostrar"
+        <activity
+            android:name=".FirebaseTestMostrar"
             android:parentActivityName=".FireBaseTestActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".FireBaseTestActivity" />
         </activity>
+        <activity android:name=".MiAgenda"></activity>
     </application>
 
 </manifest>

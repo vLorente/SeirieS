@@ -1,4 +1,4 @@
-package android.ucam.edu.seiries.singletons;
+package android.ucam.edu.seiries.config;
 
 
 public final class Config {
