@@ -25,7 +25,8 @@ import com.google.firebase.storage.UploadTask;
 
 public class FireBaseTestActivity extends AppCompatActivity {
 
-    private static final String MSG_ID = "series";
+    private static final String SERIES_ID = "series";
+    private static final String COUNTER_ID = "count";
     private static final int REQUEST_IMAGE_OPEN = 1;
     private static final String TAG = "TEST FIREBASE";
 
@@ -37,9 +38,11 @@ public class FireBaseTestActivity extends AppCompatActivity {
     private Uri fullPhotoUri;
     private DatabaseReference ref;
     private DatabaseReference seriesRef;
+    private DatabaseReference counterRef;
     private StorageReference storageReference;
     private ProgressBar progressBar;
     private SerieBean nueva_serie;
+    private long contador;
 
 
     @Override
@@ -52,7 +55,8 @@ public class FireBaseTestActivity extends AppCompatActivity {
         description = findViewById(R.id.description_firebase);
         imageButton = findViewById(R.id.img_firebase);
         ref = FirebaseDatabase.getInstance().getReference();
-        seriesRef = ref.child(MSG_ID);
+        seriesRef = ref.child(SERIES_ID);
+        counterRef = ref.child(COUNTER_ID);
         storageReference = FirebaseStorage.getInstance().getReference();
         progressBar = findViewById(R.id.progressBarFirebase);
         btn_mostrar = findViewById(R.id.btn_mostrar_firabase);
@@ -68,36 +72,37 @@ public class FireBaseTestActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-            String txt_name = name.getText().toString();
-            String txt_descrip = description.getText().toString();
+                String txt_name = name.getText().toString();
+                String txt_descrip = description.getText().toString();
 
-            if(fullPhotoUri!=null){
-                nueva_serie = new SerieBean(txt_name,txt_descrip,fullPhotoUri.getLastPathSegment(),1,2,12,0);
-            } else {
-                Toast.makeText(FireBaseTestActivity.this,"No se ha encontrado foto",Toast.LENGTH_SHORT).show();
-            }
-            activarProgressBar();
-
-            name.setText("");
-            description.setText("");
-            imageButton.setImageResource(R.drawable.imgdefault);
-
-            StorageReference filePath = storageReference.child("images").child(fullPhotoUri.getLastPathSegment());
-
-            filePath.putFile(fullPhotoUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    nueva_serie.setImageUriString(taskSnapshot.getDownloadUrl().toString());
-                    seriesRef.push().setValue(nueva_serie);
-
-                    Uri uri = taskSnapshot.getDownloadUrl();
-                    Log.d(TAG, uri.toString());
-                    Log.e(TAG,taskSnapshot.getDownloadUrl().toString());
-                    desactivarProgressBar();
-                    Toast.makeText(FireBaseTestActivity.this,"Serie subida a Firebase",Toast.LENGTH_SHORT).show();
+                if(fullPhotoUri!=null){
+                    nueva_serie = new SerieBean(contador,txt_name,txt_descrip,fullPhotoUri.getLastPathSegment(),1,2,12,0);
+                } else {
+                    Toast.makeText(FireBaseTestActivity.this,"No se ha encontrado foto",Toast.LENGTH_SHORT).show();
                 }
-            });
+                activarProgressBar();
 
+                name.setText("");
+                description.setText("");
+                imageButton.setImageResource(R.drawable.imgdefault);
+
+                StorageReference filePath = storageReference.child("images").child(fullPhotoUri.getLastPathSegment());
+
+                filePath.putFile(fullPhotoUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        nueva_serie.setImageUriString(taskSnapshot.getDownloadUrl().toString());
+
+                        Log.e(TAG,"El id es: "+contador);
+
+                        Uri uri = taskSnapshot.getDownloadUrl();
+                        Log.d(TAG, uri.toString());
+
+                        seriesRef.push().setValue(nueva_serie);
+                        desactivarProgressBar();
+                        Toast.makeText(FireBaseTestActivity.this,"Serie subida a Firebase",Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
 
@@ -105,6 +110,19 @@ public class FireBaseTestActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(FireBaseTestActivity.this, FirebaseTestMostrar.class));
+            }
+        });
+
+        counterRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                contador = dataSnapshot.getValue(Long.class);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(TAG,"Error al conseguir el ID");
             }
         });
 
@@ -116,8 +134,11 @@ public class FireBaseTestActivity extends AppCompatActivity {
         seriesRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-               long num_series = dataSnapshot.getChildrenCount();
-               Log.d(TAG, "El número de series actual es: "+num_series);
+                long num_series = dataSnapshot.getChildrenCount();
+                Log.d(TAG, "El número de series actual es: "+num_series);
+                Log.d(TAG, "El ID actual es: "+contador);
+                //counterRef.setValue(contador+1);
+                //Log.d(TAG, "El ID nuevo es: "+contador);
             }
 
             @Override
@@ -125,6 +146,8 @@ public class FireBaseTestActivity extends AppCompatActivity {
 
             }
         });
+
+
     }
 
     //Función para abrir el explorador y seleccionar la imagen
@@ -170,5 +193,4 @@ public class FireBaseTestActivity extends AppCompatActivity {
         description.setVisibility(View.VISIBLE);
         btn_modificar.setVisibility(View.VISIBLE);
     }
-
 }

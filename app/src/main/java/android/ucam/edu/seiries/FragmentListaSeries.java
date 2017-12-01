@@ -17,6 +17,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.firebase.database.DatabaseReference;
+
 import java.util.ArrayList;
 
 
@@ -24,6 +26,8 @@ public class FragmentListaSeries extends Fragment {
 
     private Resources res;
     private ArrayList<Serie> datos;
+    DatabaseReference dbRef;
+    DatabaseReference seriesRef;
     private SeriesDB db;
 
     private ListView lstListado;

@@ -25,7 +25,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.ucam.edu.seiries.beans.SerieBean;
 import android.ucam.edu.seiries.db.EventosDB;
-import android.ucam.edu.seiries.db.SeriesDB;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -40,8 +39,11 @@ import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -53,11 +55,9 @@ public class ActivitiAddSerie extends AppCompatActivity {
 
     private static final int NOTIF_ID = 1234;
     private static final int REQUEST_IMAGE_OPEN = 1;
-    private static final String CHILDREN_ID = "series";
+    private static final String SERIES_ID = "series";
+    private static final String CONTADOR_ID = "count";
     private static final String TAG = "AÑADIR SERIE";
-    private DatabaseReference ref;
-    private DatabaseReference seriesRef;
-    private StorageReference storageReference;
     private Uri fullPhotoUri;
     private ImageButton imageButton;
     private Spinner spinner_dia;
@@ -67,11 +67,15 @@ public class ActivitiAddSerie extends AppCompatActivity {
     private int dia_seleccionado;
     private int estado_seleccionado;
     private SerieBean nueva_serie;
-    private SeriesDB db;
+    private DatabaseReference ref;
+    private DatabaseReference seriesRef;
+    private DatabaseReference counterRef;
+    private StorageReference storageReference;
     private EventosDB dbeventos;
     private int num_caps = -1;
     private int num_picker;
     private int hay_evento;
+    private long contador;
     private static int MY_PERMISSIONS_REQUEST_READ_CONTACTS=1;
     private static String[] PERMISSIONS = {Manifest.permission.READ_CALENDAR,Manifest.permission.WRITE_CALENDAR};
 
@@ -82,7 +86,6 @@ public class ActivitiAddSerie extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_serie);
 
-        db = new SeriesDB(this);
         dbeventos = new EventosDB(this);
 
         final EditText name = (EditText) findViewById(R.id.editText2);
@@ -91,7 +94,8 @@ public class ActivitiAddSerie extends AppCompatActivity {
         spinner_estado = (Spinner) findViewById(R.id.spinner_estado);
         option_calendar = (Switch) findViewById(R.id.switch_calendar);
         ref = FirebaseDatabase.getInstance().getReference();
-        seriesRef = ref.child(CHILDREN_ID);
+        seriesRef = ref.child(SERIES_ID);
+        counterRef = ref.child(CONTADOR_ID);
         storageReference = FirebaseStorage.getInstance().getReference();
         animacion = (LottieAnimationView) findViewById(R.id.lottieAnimation);
         imageButton = (ImageButton) findViewById(R.id.imageButton);
@@ -150,7 +154,7 @@ public class ActivitiAddSerie extends AppCompatActivity {
                     Toast.makeText(ActivitiAddSerie.this, "Debes rellenar todos los campos, no olvides seleccionar duración", Toast.LENGTH_SHORT).show();
                     startActivity(intencion);
                 } else {
-                    nueva_serie = new SerieBean(name.getText().toString(), description.getText().toString(), "", dia_seleccionado, estado_seleccionado, num_caps,hay_evento);
+                    nueva_serie = new SerieBean(contador,name.getText().toString(), description.getText().toString(), "", dia_seleccionado, estado_seleccionado, num_caps,hay_evento);
 
                     activarAnimation();
 
@@ -176,7 +180,7 @@ public class ActivitiAddSerie extends AppCompatActivity {
 
                     ///Añadir el evento al calendario en caso de haber seleccionado la opción
                     if(option_calendar.isChecked()){
-                        nuevoEvento(view,nueva_serie.getName(),dia_seleccionado,num_caps,db.getLastSerieId());
+                        nuevoEvento(view,nueva_serie.getName(),dia_seleccionado,num_caps,contador);
                         //Lanzamos la notificacion de que se ha creado el evento
                         lanzarNotificacion(nueva_serie.getName());
                     }
@@ -197,11 +201,30 @@ public class ActivitiAddSerie extends AppCompatActivity {
             }
         });
 
-        db.close();
+
         dbeventos.close();
     }
 
     ///// FIN ON CREATE /////
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        counterRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                contador = dataSnapshot.getValue(Long.class);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(TAG,"Error al conseguir el ID");
+            }
+        });
+    }
 
     //Función para abrir el explorador y seleccionar la imagen
     public void selectImage() {
@@ -224,6 +247,7 @@ public class ActivitiAddSerie extends AppCompatActivity {
         }
     }
 
+    //Dialog para seleccionar el número de capítulos
     private void numberPickerDialog() {
         NumberPicker numberPicker = new NumberPicker(this);
         numberPicker.setMaxValue(999);
@@ -254,7 +278,7 @@ public class ActivitiAddSerie extends AppCompatActivity {
     }
 
     //Agregar un nuevo evento a Calendar mediante Content Provider
-    public void nuevoEvento(View v,String name_serie, @Nullable int day, @Nullable int num_caps, int id_serie){
+    public void nuevoEvento(View v,String name_serie, @Nullable int day, @Nullable int num_caps, long id_serie){
 
         try{
             long calID = 1;
