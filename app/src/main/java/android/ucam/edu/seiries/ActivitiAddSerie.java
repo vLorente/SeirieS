@@ -38,6 +38,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -102,9 +103,8 @@ public class ActivitiAddSerie extends AppCompatActivity {
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 selectImage();
-                            }
+            }
         });
 
         spinner_dia.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -172,7 +172,6 @@ public class ActivitiAddSerie extends AppCompatActivity {
 
                             Uri uri = taskSnapshot.getDownloadUrl();
                             Log.d(TAG, uri.toString());
-                            Log.e(TAG,taskSnapshot.getDownloadUrl().toString());
                             desactivarAnimation();
                             Toast.makeText(ActivitiAddSerie.this,"Gracias por tu aporte!",Toast.LENGTH_SHORT).show();
                         }
@@ -244,7 +243,12 @@ public class ActivitiAddSerie extends AppCompatActivity {
             fullPhotoUri = data.getData();
 
             Log.wtf("INFO", "Resultado OK");
-            imageButton.setImageURI(fullPhotoUri);
+
+            Glide.with(this)
+                    .load(fullPhotoUri)
+                    .fitCenter()
+                    .centerCrop()
+                    .into(imageButton);
         } else {
             Log.wtf("INFO", "Resultado NOPE");
         }

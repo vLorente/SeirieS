@@ -6,6 +6,7 @@
     android:layout_height="wrap_content">
 
     <ScrollView
+        android:id="@+id/srollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginEnd="8dp"
@@ -210,5 +211,14 @@
 
         </android.support.constraint.ConstraintLayout>
     </ScrollView>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/animacionUpdate"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:lottie_imageAssetsFolder="assets"
+        app:lottie_fileName="splashy_loader.json"
+        app:lottie_loop="true"
+        android:visibility="gone"/>
 
 </android.support.constraint.ConstraintLayout>
