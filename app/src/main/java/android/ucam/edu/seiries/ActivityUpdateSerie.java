@@ -206,7 +206,7 @@ public class ActivityUpdateSerie extends AppCompatActivity {
         btn_add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(name.getText().toString().equals("") || description.getText().toString().equals("") || num_caps==-1 || fullPhotoUri!=null){
+                if(name.getText().toString().equals("") || description.getText().toString().equals("") || num_caps==-1){
 
                     Intent intencion=new Intent(ActivityUpdateSerie.this,FragmentSeriesMain.class);
                     intencion.putExtra("RESULT","NOPE");
@@ -215,8 +215,6 @@ public class ActivityUpdateSerie extends AppCompatActivity {
 
                 }
                 else {
-
-
                     try{
                         StorageReference filePath = storageReference.child("images").child(fullPhotoUri.getLastPathSegment());
                         filePath.putFile(fullPhotoUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -282,14 +280,6 @@ public class ActivityUpdateSerie extends AppCompatActivity {
     private void actualizarSerie(long id,String name, String description, String imageUrl, int dia_seleccionado, int estado_seleccionado, int num_caps, int hay_evento) {
         serie = new SerieBean(id,name,description,imageUrl,dia_seleccionado,estado_seleccionado,num_caps,hay_evento);
         seriesRef.child(itemKey).setValue(serie);
-
-//        seriesRef.child(itemKey).child("name").setValue(name);
-//        seriesRef.child(itemKey).child("description").setValue(description);
-//        seriesRef.child(itemKey).child("imageUriString").setValue(imageUrl);
-//        seriesRef.child(itemKey).child("dia_salida").setValue(dia_seleccionado);
-//        seriesRef.child(itemKey).child("estadoSerie").setValue(estado_seleccionado);
-//        seriesRef.child(itemKey).child("num_capitulos").setValue(num_caps);
-//        seriesRef.child(itemKey).child("evento").setValue(hay_evento);
     }
 
     //Función para abrir el explorador y seleccionar la imagen
