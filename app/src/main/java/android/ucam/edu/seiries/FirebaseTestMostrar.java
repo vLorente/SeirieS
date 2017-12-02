@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.ucam.edu.seiries.beans.SerieBean;
 import android.ucam.edu.seiries.customs.CustomAdapter;
+import android.util.Log;
 import android.widget.ListView;
 
 import com.google.firebase.database.ChildEventListener;
@@ -36,6 +37,7 @@ public class FirebaseTestMostrar extends AppCompatActivity {
         seriesRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Log.e("TEST MOSTRAR", "Se añade una serie al array");
                 series.add(dataSnapshot.getValue(SerieBean.class));
                 adapter.notifyDataSetChanged();
             }

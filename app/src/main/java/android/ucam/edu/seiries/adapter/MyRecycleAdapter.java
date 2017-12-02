@@ -5,11 +5,13 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.ucam.edu.seiries.R;
+import android.ucam.edu.seiries.customs.CustomAdapter;
 import android.ucam.edu.seiries.model.Item;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -31,17 +33,18 @@ class MyViewHolderWithoutChild extends RecyclerView.ViewHolder{
 
 class MyViewHolderWithChild extends RecyclerView.ViewHolder{
 
-    public TextView textView,textViewHijo;
+    public TextView textView;
     public RelativeLayout btnExpandir;
     public ExpandableLinearLayout expandableLayout;
+    public ListView listView;
 
     public MyViewHolderWithChild(View itemView) {
         super(itemView);
 
         textView = itemView.findViewById(R.id.textPadre);
-        textViewHijo = itemView.findViewById(R.id.textHijo);
         btnExpandir = itemView.findViewById(R.id.buttonAgenda);
         expandableLayout = itemView.findViewById(R.id.expandableLayout);
+        listView = itemView.findViewById(R.id.listViewAgenda);
 
     }
 }
@@ -129,7 +132,11 @@ public class MyRecycleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     }
                 });
 
-                viewHolder.textViewHijo.setText(items.get(position).getSubText());
+                CustomAdapter adapter = new CustomAdapter(context,item.getSeries());
+
+                viewHolder.listView.setAdapter(adapter);
+
+
             }
             break;
             default:

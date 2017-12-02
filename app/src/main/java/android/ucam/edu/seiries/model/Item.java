@@ -1,14 +1,19 @@
 package android.ucam.edu.seiries.model;
 
 
+import android.ucam.edu.seiries.beans.SerieBean;
+
+import java.util.ArrayList;
+
 public class Item {
-    private String text, subText;
+    private String text;
+    private ArrayList<SerieBean> series;
     private boolean isExpandable;
 
-    public Item(String text, String subText, boolean isExpandable) {
+    public Item(String text, boolean isExpandable, ArrayList<SerieBean> series) {
         this.text = text;
-        this.subText = subText;
         this.isExpandable = isExpandable;
+        this.series = series;
     }
 
     public String getText() {
@@ -19,19 +24,19 @@ public class Item {
         this.text = text;
     }
 
-    public String getSubText() {
-        return subText;
-    }
-
-    public void setSubText(String subText) {
-        this.subText = subText;
-    }
-
     public boolean isExpandable() {
         return isExpandable;
     }
 
     public void setExpandable(boolean expandable) {
         isExpandable = expandable;
+    }
+
+    public ArrayList<SerieBean> getSeries() {
+        return series;
+    }
+
+    public void setSeries(ArrayList<SerieBean> series) {
+        this.series = series;
     }
 }
