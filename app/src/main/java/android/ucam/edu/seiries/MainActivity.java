@@ -226,6 +226,7 @@ public class MainActivity extends AppCompatActivity
                     .centerCrop()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .thumbnail(0.5f)
+                    .error(R.drawable.imgdefault)
                     .into(imgProfile);
         }
     }

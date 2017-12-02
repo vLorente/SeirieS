@@ -42,12 +42,16 @@ public class MiAgenda extends AppCompatActivity {
     final ArrayList<SerieBean> viernes = new ArrayList<>();
     final ArrayList<SerieBean> sabado = new ArrayList<>();
     final ArrayList<SerieBean> domingo = new ArrayList<>();
+    final List<ArrayList<SerieBean>> arraysDias = new ArrayList<>();
     private FloatingActionButton button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mi_agenda);
+
+
+
 
         dbRef = FirebaseDatabase.getInstance().getReference();
         seriesRef = dbRef.child(SERIES_ID);
@@ -57,19 +61,34 @@ public class MiAgenda extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(this);
         lista.setLayoutManager(layoutManager);
         button = findViewById(R.id.botonActualizarAgenda);
-
         activarAnimation();
         setData();
+
 
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                arraysDias.add(lunes);
+                arraysDias.add(martes);
+                arraysDias.add(miercoles);
+                arraysDias.add(jueves);
+                arraysDias.add(viernes);
+                arraysDias.add(sabado);
+                arraysDias.add(domingo);
+
                 Resources res = getResources();
                 String[] dias = res.getStringArray(R.array.days);
                 for (int i=0; i<dias.length;i++){
-                    Item item = new Item(dias[i],true,lunes);
-                    items.add(item);
+                    if(arraysDias.get(i).size()>0){
+                        Item item = new Item(dias[i],true,arraysDias.get(i));
+                        items.add(item);
+                    } else {
+                        Item item = new Item(dias[i],false,arraysDias.get(i));
+                        items.add(item);
+                    }
+
 
                 }
 
@@ -83,41 +102,8 @@ public class MiAgenda extends AppCompatActivity {
     }
 
     private void setData() {
-        final List<ArrayList<SerieBean>> arraysDias = new ArrayList<>();
-//        for (SerieBean serie : datos){
-//            switch (serie.getDia_salida()){
-//                case 0:
-//                    lunes.add(serie);
-//                    arraysDias.add(lunes);
-//                    break;
-//                case 1:
-//                    martes.add(serie);
-//                    arraysDias.add(martes);
-//                    break;
-//                case 2:
-//                    miercoles.add(serie);
-//                    arraysDias.add(miercoles);
-//                    break;
-//                case 3:
-//                    jueves.add(serie);
-//                    arraysDias.add(jueves);
-//                    break;
-//                case 4:
-//                    viernes.add(serie);
-//                    arraysDias.add(viernes);
-//                    break;
-//                case 5:
-//                    sabado.add(serie);
-//                    arraysDias.add(sabado);
-//                    break;
-//                case 6:
-//                    domingo.add(serie);
-//                    arraysDias.add(domingo);
-//                    break;
-//                default:
-//                    break;
-//            }
-//        }
+
+
         seriesRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {

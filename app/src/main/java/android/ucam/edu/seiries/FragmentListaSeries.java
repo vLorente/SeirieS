@@ -53,7 +53,7 @@ public class FragmentListaSeries extends Fragment {
         seriesRef = dbRef.child(SERIES_ID);
         lstListado = getView().findViewById(R.id.lstSeries) ;
 
-        adaptadorSeries = new CustomAdapter(getActivity(),datos);
+        adaptadorSeries = new CustomAdapter(getContext(),datos);
 
 
         seriesRef.addChildEventListener(new ChildEventListener() {
@@ -108,8 +108,7 @@ public class FragmentListaSeries extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> list, View view, int pos, long id) {
                 if (listener!=null) {
-                    listener.onSerieSeleccionada((
-                            (SerieBean)lstListado.getAdapter().getItem(pos)));
+                    listener.onSerieSeleccionada(((SerieBean)lstListado.getAdapter().getItem(pos)));
                 }
             }
         });

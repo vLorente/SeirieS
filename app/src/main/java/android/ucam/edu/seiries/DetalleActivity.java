@@ -21,6 +21,6 @@ public class DetalleActivity extends AppCompatActivity {
         setContentView(R.layout.serie_detalle);
 
         FragmentDetalle detalle =(FragmentDetalle)getSupportFragmentManager().findFragmentById(R.id.FrgDetalle);
-        detalle.mostrarDetalle(getIntent().getIntExtra(EXTRA_ID,-1),getIntent().getStringExtra(EXTRA_TITLE),getIntent().getStringExtra(EXTRA_TEXTO), getIntent().getStringExtra(EXTRA_IMG),getIntent().getIntExtra(EXTRA_CAPS,0),getIntent().getIntExtra(EXTRA_EVENTO,0),getIntent().getIntExtra(EXTRA_ESTADO,0),getIntent().getIntExtra(EXTRA_DIA,0));
+        detalle.mostrarDetalle(getIntent().getLongExtra(EXTRA_ID,-1),getIntent().getStringExtra(EXTRA_TITLE),getIntent().getStringExtra(EXTRA_TEXTO), getIntent().getStringExtra(EXTRA_IMG),getIntent().getIntExtra(EXTRA_CAPS,0),getIntent().getIntExtra(EXTRA_EVENTO,0),getIntent().getIntExtra(EXTRA_ESTADO,0),getIntent().getIntExtra(EXTRA_DIA,0));
     }
 }
