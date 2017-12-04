@@ -175,9 +175,6 @@ public class MainActivity extends AppCompatActivity
             case R.id.menu_about:
                 startActivity(new Intent(this,AcercaDe.class));
                 return true;
-            case R.id.menu_firebase:
-                startActivity(new Intent(this, FireBaseTestActivity.class));
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -196,8 +193,6 @@ public class MainActivity extends AppCompatActivity
             startActivity(new Intent(this, MiAgenda.class));
         } else if (id == R.id.nav_series) {
             startActivity(new Intent(this,FragmentSeriesMain.class));
-        } else if (id == R.id.nav_about) {
-            startActivity(new Intent(this,AcercaDe.class));
         } else if (id == R.id.nav_Pantalla) {
             startActivity(new Intent(this,MultiTouchActivity.class));
         } else if (id == R.id.nav_sensors) {

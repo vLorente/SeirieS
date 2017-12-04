@@ -11,11 +11,6 @@
         android:orderInCategory="101"
         android:title="@string/btn_exit" />
     <item
-        android:id="@+id/menu_firebase"
-        android:orderInCategory="100"
-        android:title="Test Firebase"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/menu_about"
         android:title="@string/acercaDe"
         app:showAsAction="always"

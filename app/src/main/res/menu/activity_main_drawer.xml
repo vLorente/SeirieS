@@ -16,10 +16,7 @@
             android:id="@+id/nav_series"
             android:icon="@drawable/list"
             android:title="@string/series" />
-        <item
-            android:id="@+id/nav_about"
-            android:icon="@drawable/ic_info"
-            android:title="@string/acercaDe" />
+
     </group>
 
     <item android:title="@string/entertainment">
