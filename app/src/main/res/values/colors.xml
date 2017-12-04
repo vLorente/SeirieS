@@ -5,4 +5,7 @@
     <color name="colorAccent">#7577e3</color>
 
     <color name="colorRow">#58a2e0e9</color>
+
+    <color name="jediBackground">#d4c1f2ee</color>
+    <color name="sithBackground">#e8131515</color>
 </resources>

@@ -180,5 +180,9 @@
     <string name="caps">Capítulos:</string>
     <string name="event_label">¿Tiene evento en el calendario?</string>
     <string name="sinopsis">Sinopsis</string>
+    <string name="sensores">Sensores</string>
+    <string name="cabjedi">Caballero Jedi</string>
+    <string name="sith">Lord Sith</string>
+    <string name="on">ON</string>
     //END FACEBOOK STRINGS
 </resources>

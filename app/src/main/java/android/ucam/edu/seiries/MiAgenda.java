@@ -2,6 +2,7 @@ package android.ucam.edu.seiries;
 
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -60,45 +61,10 @@ public class MiAgenda extends AppCompatActivity {
         lista.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         lista.setLayoutManager(layoutManager);
-        button = findViewById(R.id.botonActualizarAgenda);
         activarAnimation();
         setData();
+        esperarYCargarDatos(3000);
 
-
-
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                arraysDias.add(lunes);
-                arraysDias.add(martes);
-                arraysDias.add(miercoles);
-                arraysDias.add(jueves);
-                arraysDias.add(viernes);
-                arraysDias.add(sabado);
-                arraysDias.add(domingo);
-
-                Resources res = getResources();
-                String[] dias = res.getStringArray(R.array.days);
-                for (int i=0; i<dias.length;i++){
-                    if(arraysDias.get(i).size()>0){
-                        Item item = new Item(dias[i],true,arraysDias.get(i));
-                        items.add(item);
-                    } else {
-                        Item item = new Item(dias[i],false,arraysDias.get(i));
-                        items.add(item);
-                    }
-
-
-                }
-
-                Log.e(TAG, "Tamaño array "+lunes.size());
-
-                adapter = new MyRecycleAdapter(items);
-                lista.setAdapter(adapter);
-                desactivarAnimation();
-            }
-        });
     }
 
     private void setData() {
@@ -162,7 +128,44 @@ public class MiAgenda extends AppCompatActivity {
 
     }
 
+    public void esperarYCargarDatos(int milisegundos) {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                arraysDias.add(lunes);
+                arraysDias.add(martes);
+                arraysDias.add(miercoles);
+                arraysDias.add(jueves);
+                arraysDias.add(viernes);
+                arraysDias.add(sabado);
+                arraysDias.add(domingo);
+
+                Resources res = getResources();
+                String[] dias = res.getStringArray(R.array.days);
+                for (int i=0; i<dias.length;i++){
+                    if(arraysDias.get(i).size()>0){
+                        Item item = new Item(dias[i],true,arraysDias.get(i));
+                        items.add(item);
+                    } else {
+                        Item item = new Item(dias[i],false,arraysDias.get(i));
+                        items.add(item);
+                    }
+
+
+                }
+
+                Log.e(TAG, "Tamaño array "+lunes.size());
+
+                adapter = new MyRecycleAdapter(items);
+                lista.setAdapter(adapter);
+
+                desactivarAnimation();
+            }
+        }, milisegundos);
+    }
+
     public void activarAnimation(){
+        animacion.playAnimation();
         animacion.setVisibility(View.VISIBLE);
         lista.setVisibility(View.GONE);
     }
@@ -170,5 +173,6 @@ public class MiAgenda extends AppCompatActivity {
     public void desactivarAnimation(){
         animacion.setVisibility(View.GONE);
         lista.setVisibility(View.VISIBLE);
+        animacion.pauseAnimation();
     }
 }

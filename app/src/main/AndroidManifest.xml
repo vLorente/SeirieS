@@ -162,12 +162,18 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".FireBaseTestActivity" />
         </activity>
-        <activity android:name=".MiAgenda"
+        <activity
+            android:name=".MiAgenda"
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+        <activity android:name=".LaserSaberActivity"
+            android:parentActivityName=".SensorActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".SensorActivity" /></activity>
     </application>
 
 </manifest>
