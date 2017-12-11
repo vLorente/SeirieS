@@ -74,34 +74,34 @@ public class MiAgenda extends AppCompatActivity {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
-                Log.e(TAG, "Se añade una serie al array");
-                //datos.add(dataSnapshot.getValue(SerieBean.class));
-                //adapter.notifyDataSetChanged();
-                switch (dataSnapshot.getValue(SerieBean.class).getDia_salida()){
-                    case 0:
-                        lunes.add(dataSnapshot.getValue(SerieBean.class));
-                        break;
-                    case 1:
-                        martes.add(dataSnapshot.getValue(SerieBean.class));
-                        break;
-                    case 2:
-                        miercoles.add(dataSnapshot.getValue(SerieBean.class));
-                        break;
-                    case 3:
-                        jueves.add(dataSnapshot.getValue(SerieBean.class));
-                        break;
-                    case 4:
-                        viernes.add(dataSnapshot.getValue(SerieBean.class));
-                        break;
-                    case 5:
-                        sabado.add(dataSnapshot.getValue(SerieBean.class));
-                        break;
-                    case 6:
-                        domingo.add(dataSnapshot.getValue(SerieBean.class));
-                        break;
-                    default:
-                        break;
+                if(dataSnapshot.getValue(SerieBean.class).getEstadoSerie() == 0){
+                    switch (dataSnapshot.getValue(SerieBean.class).getDia_salida()){
+                        case 0:
+                            lunes.add(dataSnapshot.getValue(SerieBean.class));
+                            break;
+                        case 1:
+                            martes.add(dataSnapshot.getValue(SerieBean.class));
+                            break;
+                        case 2:
+                            miercoles.add(dataSnapshot.getValue(SerieBean.class));
+                            break;
+                        case 3:
+                            jueves.add(dataSnapshot.getValue(SerieBean.class));
+                            break;
+                        case 4:
+                            viernes.add(dataSnapshot.getValue(SerieBean.class));
+                            break;
+                        case 5:
+                            sabado.add(dataSnapshot.getValue(SerieBean.class));
+                            break;
+                        case 6:
+                            domingo.add(dataSnapshot.getValue(SerieBean.class));
+                            break;
+                        default:
+                            break;
+                    }
                 }
+
 
             }
 
