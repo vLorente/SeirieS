@@ -113,14 +113,11 @@ public class LaserSaberActivity extends AppCompatActivity implements SensorEvent
         Log.e("ORIENTATION ANGLES","0: "+mOrientationAngles[0]+" 1: "+mOrientationAngles[1]+" 2: "+mOrientationAngles[2]);
     }
 
-    // Compute the three orientation angles based on the most recent readings from
-    // the device's accelerometer and magnetometer.
+
     public void updateOrientationAngles() {
-        // Update rotation matrix, which is needed to update orientation angles.
         sensorManager.getRotationMatrix(mRotationMatrix, null,
                 mAccelerometerReading, mMagnetometerReading);
 
-        // "mRotationMatrix" now has up-to-date information.
         sensorManager.getOrientation(mRotationMatrix, mOrientationAngles);
 
         if(mOrientationAngles[1]<MIN_PITCH || mOrientationAngles[1]>MAX_PITCH){

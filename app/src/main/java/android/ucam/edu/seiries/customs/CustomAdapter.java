@@ -32,7 +32,7 @@ public class CustomAdapter extends ArrayAdapter<SerieBean> {
     }
     @Override
     public View getView(int position, View view, ViewGroup parent) {
-        View rowView = LayoutInflater.from(getContext()).inflate(R.layout.mylistview, parent, false);
+        View rowView = LayoutInflater.from(getContext()).inflate(R.layout.mylistviewrow, parent, false);
         TextView txtTitle = rowView.findViewById(R.id.txt);
 
         ImageView imageView = rowView.findViewById(R.id.img);
