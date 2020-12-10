@@ -4,15 +4,14 @@ import android.app.AlertDialog;
 import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract.Events;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.ucam.edu.seiries.beans.Serie;
+import android.ucam.edu.seiries.beans.SerieBean;
 import android.ucam.edu.seiries.db.EventosDB;
-import android.ucam.edu.seiries.db.SeriesDB;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,12 +19,28 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 
 public class FragmentDetalle extends Fragment {
 
-    private int id;
+    private static final String TAG = "FRAGMENT DETALLE";
+    private long id;
     private static final String DEBUG_TAG = "FragmentDetalle";
+    private URL url;
+    private Uri uri;
+    private SerieBean serie;
+    private DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+    private DatabaseReference seriesRef = ref.child("series");
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -35,24 +50,77 @@ public class FragmentDetalle extends Fragment {
     @Override
     public void onActivityCreated(@android.support.annotation.Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+
     }
 
-    public void mostrarDetalle(final int id, String title, String texto, int image, @Nullable Uri imageUri) {
+    public void mostrarDetalle(final long id, String title, String texto, String imageUirDownload, int capitulos, int evento, int estado, int dia) {
         this.id=id;
         TextView txtTitle = (TextView)getView().findViewById(R.id.textTitle);
         txtTitle.setText(title);
         TextView txtDetalle = (TextView)getView().findViewById(R.id.textDetalle);
         txtDetalle.setText(texto);
-        ImageView imageDetalle = (ImageView) getView().findViewById(R.id.imgDetalle);
-        try {
-            imageDetalle.setImageResource(image);
+        Resources res = getResources();
+        TextView txtEstado = (TextView)getView().findViewById(R.id.txt_estado);
+        String[] estados = res.getStringArray(R.array.estdos_array);
+        txtEstado.setText(estados[estado]);
+        TextView txtCapitulos = getView().findViewById(R.id.txt_capitulos);
+        txtCapitulos.setText(""+capitulos);
+        TextView txtEvento = getView().findViewById(R.id.txt_evento);
+        String[] dias = res.getStringArray(R.array.days);
+        if(evento==0){
+            txtEvento.setText("No hay recordatorio");
+        } else {
+            txtEvento.setText("Recordatorio los "+dias[dia]);
         }
-        catch (Exception e){
-            imageDetalle.setImageURI(imageUri);
+        ImageView imageDetalle = (ImageView) getView().findViewById(R.id.imgDetalle);
+
+        try {
+            url = new URL(imageUirDownload);
+            uri = Uri.parse(url.toURI().toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
         }
 
-        FloatingActionButton btn_preferences = getView().findViewById(R.id.btn_info);
-        btn_preferences.setOnClickListener(new View.OnClickListener() {
+        Glide.with(getContext())
+                .load(uri)
+                .fitCenter()
+                .centerCrop()
+                .into(imageDetalle);
+
+        //BUSCAMOS LA SERIE EN BD
+        Log.e(TAG, "El id es : "+id);
+        seriesRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Log.e(TAG,"Busca la serie");
+                if(dataSnapshot.getValue(SerieBean.class).getId()==id){
+                    serie=dataSnapshot.getValue(SerieBean.class);
+                    Log.e(TAG,"Encuentra la serie con id: "+dataSnapshot.getValue(SerieBean.class).getId());
+                }
+            }
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        FloatingActionButton btn_update = getView().findViewById(R.id.btn_info);
+        btn_update.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getContext(),ActivityUpdateSerie.class);
@@ -72,10 +140,39 @@ public class FragmentDetalle extends Fragment {
                         .setPositiveButton("Sí", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                SeriesDB db = new SeriesDB(getContext());
-                                Serie serie = db.getSerieById(id);
-                                db.deleteSerie(id);
-                                db.close();
+
+                                //BORRRAR SERIE////
+
+
+                                seriesRef.addChildEventListener(new ChildEventListener() {
+                                    @Override
+                                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                                        if(dataSnapshot.getValue(SerieBean.class).getId()==id){
+                                            dataSnapshot.getRef().removeValue();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                                    }
+
+                                    @Override
+                                    public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                                    }
+
+                                    @Override
+                                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
                                 if(serie.getEvento()==1){
                                     Log.wtf("Borrando Serie","Tiene evento la serie "+id+"? "+serie.getEvento());
                                     EventosDB eventosDB = new EventosDB(getContext());

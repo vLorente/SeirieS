@@ -32,7 +32,7 @@ public class EventosDB extends SQLiteOpenHelper {
     }
 
     //Añadir nuevo evento
-    public  void addEvent(int id_serie, long id_event){
+    public  void addEvent(long id_serie, long id_event){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(KEY_ID_SERIE, id_serie);
@@ -43,7 +43,7 @@ public class EventosDB extends SQLiteOpenHelper {
     }
 
     //Buscar Eventos relacionados a una serie
-    public int findEvent(int id_serie){
+    public int findEvent(long id_serie){
         String selectQuery = "SELECT * FROM "+NOMBRE_TABLA+ " WHERE "+KEY_ID_SERIE+" = "+id_serie+"";
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery,null);
@@ -56,7 +56,7 @@ public class EventosDB extends SQLiteOpenHelper {
         return cursor.getInt(2);
     }
 
-    public long deleteEvent(int id_serie){
+    public long deleteEvent(long id_serie){
 
         String where = KEY_ID_SERIE+"= '"+id_serie+"'";
         long eventID = findEvent(id_serie);

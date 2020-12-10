@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
 import android.support.annotation.Nullable;
@@ -23,9 +24,8 @@ import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.ucam.edu.seiries.beans.Serie;
+import android.ucam.edu.seiries.beans.SerieBean;
 import android.ucam.edu.seiries.db.EventosDB;
-import android.ucam.edu.seiries.db.SeriesDB;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -37,11 +37,27 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
+import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Calendar;
 
 
@@ -49,6 +65,11 @@ public class ActivityUpdateSerie extends AppCompatActivity {
 
     static final int REQUEST_IMAGE_OPEN = 1;
     private static final String DEBUG_TAG = "ActivityUpdateSerie";
+    private URL url;
+    private Uri uri;
+    private SerieBean serie;
+    private DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+    private DatabaseReference seriesRef = ref.child("series");
     private static final int NOTIF_ID = 1234;
     private Uri fullPhotoUri;
     private ImageButton imageButton;
@@ -56,9 +77,8 @@ public class ActivityUpdateSerie extends AppCompatActivity {
     private Spinner spinner_estado;
     private int dia_seleccionado;
     private int estado_seleccionado;
-    private SeriesDB db;
-    private int id_serie;
-    private Serie last;
+    private long id_serie;
+    private SerieBean last;
     private int num_caps=-1;
     private int num_picker;
     private TextView txt_caps;
@@ -66,46 +86,59 @@ public class ActivityUpdateSerie extends AppCompatActivity {
     private int hay_evento;
     private static int MY_PERMISSIONS_REQUEST_READ_CONTACTS=1;
     private static String[] PERMISSIONS = {Manifest.permission.READ_CALENDAR,Manifest.permission.WRITE_CALENDAR};
+    private StorageReference storageReference;
+    private String itemKey;
+    private EditText name;
+    private EditText description;
+    private LottieAnimationView animacion;
+    private ScrollView view;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.update_serie);
 
-        db = new SeriesDB(this);
-
         //Recuperamos el ID de la intencion
-        id_serie=getIntent().getExtras().getInt("ID");
+        id_serie=getIntent().getExtras().getLong("ID");
         //Buscamos la serie a editar por su ID
-        last=db.getSerieById(id_serie);
-        num_caps=last.getNum_capitulos();
+        seriesRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                if(dataSnapshot.getValue(SerieBean.class).getId()==id_serie){
+                    last=dataSnapshot.getValue(SerieBean.class);
+                    itemKey = dataSnapshot.getKey();
+                }
+            }
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
 
-        final EditText name = (EditText) findViewById(R.id.editText2);
-        final EditText description = (EditText) findViewById(R.id.editText3);
+            }
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        name = (EditText) findViewById(R.id.editText2);
+        description = (EditText) findViewById(R.id.editText3);
         spinner_dia = (Spinner) findViewById(R.id.spinner_dia);
         spinner_estado= (Spinner) findViewById(R.id.spinner_estado);
         imageButton = (ImageButton) findViewById(R.id.imageButton);
         txt_caps = (TextView) findViewById(R.id.txt_caps);
         switch_evento = (Switch) findViewById(R.id.switch_ac_evento);
+        storageReference = FirebaseStorage.getInstance().getReference();
+        view = findViewById(R.id.srollView);
+        animacion = findViewById(R.id.animacionUpdate);
 
-        //Cargamos los datos anteriores de la serie en los campos para poder editarlos
-        spinner_dia.setSelection(last.getDia_salida());
-        spinner_estado.setSelection(last.getEstadoSerie());
-        name.setText(last.getName());
-        description.setText(last.getDescription());
-        if(last.getImageId()==-1){
-            imageButton.setImageURI(last.getImageUri());
-        }else {
-            imageButton.setImageResource(last.getImageId());
-        }
-        txt_caps.setText("Número de capítulos actual: "+num_caps);
-        if(last.getEvento()==1){
-            switch_evento.setChecked(true);
-        }else{
-            switch_evento.setChecked(false);
-        }
-
-
+        activarAnimation();
+        esperarYCargarDatos(2000);
 
         //Llamada a la funcion para seleccionar imagen
         imageButton.setOnClickListener(new View.OnClickListener() {
@@ -177,60 +210,58 @@ public class ActivityUpdateSerie extends AppCompatActivity {
 
                     Intent intencion=new Intent(ActivityUpdateSerie.this,FragmentSeriesMain.class);
                     intencion.putExtra("RESULT","NOPE");
-                    Toast.makeText(ActivityUpdateSerie.this,"Debes rellenar todos los campos, no olvides seleccionar duración",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ActivityUpdateSerie.this,"Debes rellenar todos los campos, no olvides seleccionar duración",Toast.LENGTH_LONG).show();
                     startActivity(intencion);
 
                 }
                 else {
-                    if(fullPhotoUri!=null){
-                        Serie serie = new Serie(name.getText().toString(),description.getText().toString(),fullPhotoUri,dia_seleccionado,estado_seleccionado,num_caps,hay_evento);
-                        db.updateSerie(id_serie,serie);
-                        Intent intencion=new Intent(ActivityUpdateSerie.this,FragmentSeriesMain.class);
-                        intencion.putExtra("RESULT","OK");
-                        startActivity(intencion);
+                    try{
+                        StorageReference filePath = storageReference.child("images").child(fullPhotoUri.getLastPathSegment());
+                        filePath.putFile(fullPhotoUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                                actualizarSerie(id_serie,name.getText().toString(),description.getText().toString(),taskSnapshot.getDownloadUrl().toString(),dia_seleccionado,estado_seleccionado,num_caps,hay_evento);
+                            }
+                        });
+                    } catch (Exception e){
+                        actualizarSerie(id_serie,name.getText().toString(),description.getText().toString(),last.getImageUriString(),dia_seleccionado,estado_seleccionado,num_caps,hay_evento);
                     }
-                    else{
-                        Serie serie;
-                        if(last.getImageId()==-1){
-                            serie = new  Serie(name.getText().toString(),description.getText().toString(),last.getImageUri(),dia_seleccionado,estado_seleccionado,num_caps,hay_evento);
-                        }else {
-                            serie = new  Serie(name.getText().toString(),description.getText().toString(),last.getImageId(),dia_seleccionado,estado_seleccionado,num_caps,hay_evento);
-                        }
 
-                        db.updateSerie(id_serie,serie);
 
-                        //Controlamos si cambia hay_evento, es decir, si se decide desactivarlo o activarlo si se
-                        // encontraba en el estado contrario
-                        if(last.getEvento()==1 && hay_evento==0){
-                            EventosDB eventosDB = new EventosDB(ActivityUpdateSerie.this);
-                            long eventID=eventosDB.deleteEvent(last.getId());
 
-                            //Mi Toast Personalizado
-                            Toast miToast = new Toast(ActivityUpdateSerie.this);
-                            LayoutInflater layoutInflater = getLayoutInflater();
-                            View layout = layoutInflater.inflate(R.layout.mytoast, (ViewGroup) findViewById(R.id.mytoast));
-                            TextView txtMsg = (TextView)layout.findViewById(R.id.txtMensaje);
-                            txtMsg.setText(getString(R.string.toastText));
-                            miToast.setDuration(Toast.LENGTH_SHORT);
-                            miToast.setGravity(Gravity.CENTER|Gravity.CENTER,0,0);
-                            miToast.setView(layout);
-                            miToast.show();
 
-                            deleteEventById(eventID);
-                            eventosDB.close();
-                        }
-                        else if(last.getEvento()==0 && hay_evento==1){
-                            nuevoEvento(view,serie.getName(),dia_seleccionado,num_caps,last.getId());
-                            Log.wtf("Actualizando serie","Se ha creado el evento");
-                            //Lanzamos la notificacion del nuevo evento
-                            lanzarNotificacion(serie.getName());
-                        }
-                        ///fin contol
+                    //Controlamos si cambia hay_evento, es decir, si se decide desactivarlo o activarlo si se
+                    // encontraba en el estado contrario
+                    if(last.getEvento()==1 && hay_evento==0){
+                        EventosDB eventosDB = new EventosDB(ActivityUpdateSerie.this);
+                        long eventID=eventosDB.deleteEvent(last.getId());
 
-                        Intent intencion=new Intent(ActivityUpdateSerie.this,FragmentSeriesMain.class);
-                        intencion.putExtra("RESULT","OK");
-                        startActivity(intencion);
+                        //Mi Toast Personalizado
+                        Toast miToast = new Toast(ActivityUpdateSerie.this);
+                        LayoutInflater layoutInflater = getLayoutInflater();
+                        View layout = layoutInflater.inflate(R.layout.mytoast, (ViewGroup) findViewById(R.id.mytoast));
+                        TextView txtMsg = (TextView)layout.findViewById(R.id.txtMensaje);
+                        txtMsg.setText(getString(R.string.toastText));
+                        miToast.setDuration(Toast.LENGTH_SHORT);
+                        miToast.setGravity(Gravity.CENTER|Gravity.CENTER,0,0);
+                        miToast.setView(layout);
+                        miToast.show();
+
+                        deleteEventById(eventID);
+                        eventosDB.close();
                     }
+                    else if(last.getEvento()==0 && hay_evento==1){
+                        nuevoEvento(view,serie.getName(),dia_seleccionado,num_caps,last.getId());
+                        Log.wtf("Actualizando serie","Se ha creado el evento");
+                        //Lanzamos la notificacion del nuevo evento
+                        lanzarNotificacion(serie.getName());
+                    }
+                    ///fin contol
+
+                    Intent intencion=new Intent(ActivityUpdateSerie.this,FragmentSeriesMain.class);
+                    intencion.putExtra("RESULT","OK");
+                    startActivity(intencion);
 
                 }
 
@@ -244,15 +275,17 @@ public class ActivityUpdateSerie extends AppCompatActivity {
                 numberPickerDialog();
             }
         });
+    }
 
-        db.close();
+    private void actualizarSerie(long id,String name, String description, String imageUrl, int dia_seleccionado, int estado_seleccionado, int num_caps, int hay_evento) {
+        serie = new SerieBean(id,name,description,imageUrl,dia_seleccionado,estado_seleccionado,num_caps,hay_evento);
+        seriesRef.child(itemKey).setValue(serie);
     }
 
     //Función para abrir el explorador y seleccionar la imagen
     public void selectImage() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(Intent.createChooser(intent,"Selecciona Imagen"), REQUEST_IMAGE_OPEN);
     }
     //Evaluamos lo que nos devuelve la activity de selección de imagen
@@ -263,7 +296,11 @@ public class ActivityUpdateSerie extends AppCompatActivity {
             fullPhotoUri = data.getData();
 
             Log.wtf("INFO","Resultado OK");
-            imageButton.setImageURI(fullPhotoUri);
+            Glide.with(ActivityUpdateSerie.this)
+                    .load(fullPhotoUri)
+                    .fitCenter()
+                    .centerCrop()
+                    .into(imageButton);
         }
         else {
             Log.wtf("INFO","Resultado NOPE");
@@ -315,7 +352,7 @@ public class ActivityUpdateSerie extends AppCompatActivity {
 
 
     //Agregar un nuevo evento a Calendar mediante Content Provider
-    public void nuevoEvento(View v, String name_serie,@Nullable int day, @Nullable int num_caps, int id_serie){
+    public void nuevoEvento(View v, String name_serie,@Nullable int day, @Nullable int num_caps, long id_serie){
 
         int permisos_escritura=checkPermission(Manifest.permission.WRITE_CALENDAR, 10515,10157);
         int permisos_lectura=checkPermission(Manifest.permission.READ_CALENDAR, 10515,10157);
@@ -416,5 +453,56 @@ public class ActivityUpdateSerie extends AppCompatActivity {
         notificationManager.notify(NOTIF_ID, builder.build());
 
     }
+
+    public void esperarYCargarDatos(int milisegundos) {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                num_caps=last.getNum_capitulos();
+
+                //Cargamos los datos anteriores de la serie en los campos para poder editarlos
+                spinner_dia.setSelection(last.getDia_salida());
+                spinner_estado.setSelection(last.getEstadoSerie());
+                name.setText(last.getName());
+                description.setText(last.getDescription());
+                try {
+                    url = new URL(last.getImageUriString());
+                    uri = Uri.parse(url.toURI().toString());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+                Glide.with(ActivityUpdateSerie.this)
+                        .load(uri)
+                        .fitCenter()
+                        .centerCrop()
+                        .into(imageButton);
+
+                txt_caps.setText("Número de capítulos actual: "+num_caps);
+
+                if(last.getEvento()==1){
+                    switch_evento.setChecked(true);
+                }else{
+                    switch_evento.setChecked(false);
+                }
+
+                desactivarAnimation();
+            }
+        }, milisegundos);
+    }
+
+    public void activarAnimation(){
+        animacion.playAnimation();
+        animacion.setVisibility(View.VISIBLE);
+        view.setVisibility(View.GONE);
+    }
+
+    public void desactivarAnimation(){
+        animacion.setVisibility(View.GONE);
+        view.setVisibility(View.VISIBLE);
+        animacion.pauseAnimation();
+    }
+
 
 }

@@ -2,7 +2,7 @@ package android.ucam.edu.seiries;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.ucam.edu.seiries.singletons.Config;
+import android.ucam.edu.seiries.config.Config;
 import android.view.ContextMenu;
 import android.view.View;
 import android.widget.Button;

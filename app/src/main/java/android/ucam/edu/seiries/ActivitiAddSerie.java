@@ -23,9 +23,8 @@ import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.ucam.edu.seiries.beans.Serie;
+import android.ucam.edu.seiries.beans.SerieBean;
 import android.ucam.edu.seiries.db.EventosDB;
-import android.ucam.edu.seiries.db.SeriesDB;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -38,6 +37,18 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
+import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
 import java.util.Calendar;
 
 
@@ -45,18 +56,27 @@ public class ActivitiAddSerie extends AppCompatActivity {
 
     private static final int NOTIF_ID = 1234;
     private static final int REQUEST_IMAGE_OPEN = 1;
+    private static final String SERIES_ID = "series";
+    private static final String CONTADOR_ID = "count";
+    private static final String TAG = "AÑADIR SERIE";
     private Uri fullPhotoUri;
     private ImageButton imageButton;
     private Spinner spinner_dia;
     private Spinner spinner_estado;
     private Switch option_calendar;
+    private LottieAnimationView animacion;
     private int dia_seleccionado;
     private int estado_seleccionado;
-    private SeriesDB db;
+    private SerieBean nueva_serie;
+    private DatabaseReference ref;
+    private DatabaseReference seriesRef;
+    private DatabaseReference counterRef;
+    private StorageReference storageReference;
     private EventosDB dbeventos;
     private int num_caps = -1;
     private int num_picker;
     private int hay_evento;
+    private long contador;
     private static int MY_PERMISSIONS_REQUEST_READ_CONTACTS=1;
     private static String[] PERMISSIONS = {Manifest.permission.READ_CALENDAR,Manifest.permission.WRITE_CALENDAR};
 
@@ -67,7 +87,6 @@ public class ActivitiAddSerie extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_serie);
 
-        db = new SeriesDB(this);
         dbeventos = new EventosDB(this);
 
         final EditText name = (EditText) findViewById(R.id.editText2);
@@ -75,15 +94,17 @@ public class ActivitiAddSerie extends AppCompatActivity {
         spinner_dia = (Spinner) findViewById(R.id.spinner_dia);
         spinner_estado = (Spinner) findViewById(R.id.spinner_estado);
         option_calendar = (Switch) findViewById(R.id.switch_calendar);
-
-
+        ref = FirebaseDatabase.getInstance().getReference();
+        seriesRef = ref.child(SERIES_ID);
+        counterRef = ref.child(CONTADOR_ID);
+        storageReference = FirebaseStorage.getInstance().getReference();
+        animacion = (LottieAnimationView) findViewById(R.id.lottieAnimation);
         imageButton = (ImageButton) findViewById(R.id.imageButton);
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 selectImage();
-                            }
+            }
         });
 
         spinner_dia.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -127,41 +148,48 @@ public class ActivitiAddSerie extends AppCompatActivity {
         btn_add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (name.getText().toString().equals("") || description.getText().toString().equals("") || num_caps == -1) {
+                if (name.getText().toString().equals("") || description.getText().toString().equals("") || num_caps == -1 || fullPhotoUri == null) {
                     Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
                     intencion.putExtra("RESULT", "NOPE");
                     Toast.makeText(ActivitiAddSerie.this, "Debes rellenar todos los campos, no olvides seleccionar duración", Toast.LENGTH_SHORT).show();
                     startActivity(intencion);
                 } else {
-                    if (fullPhotoUri != null) {
-                        Serie serie = new Serie(name.getText().toString(), description.getText().toString(), fullPhotoUri, dia_seleccionado, estado_seleccionado, num_caps,hay_evento);
-                        db.addSerie(serie);
+                    nueva_serie = new SerieBean(contador,name.getText().toString(), description.getText().toString(), "", dia_seleccionado, estado_seleccionado, num_caps,hay_evento);
 
-                        ///Añadir el evento al calendario en caso de haber seleccionado la opción
-                        if(option_calendar.isChecked()){
-                            nuevoEvento(view,serie.getName(),dia_seleccionado,num_caps,db.getLastSerieId());
-                            //Lanzamos la notificacion de que se ha creado el evento
-                            lanzarNotificacion(serie.getName());
+                    activarAnimation();
+
+                    name.setText("");
+                    description.setText("");
+                    imageButton.setImageResource(R.drawable.imgdefault);
+
+                    StorageReference filePath = storageReference.child("images").child(fullPhotoUri.getLastPathSegment());
+
+                    filePath.putFile(fullPhotoUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            nueva_serie.setImageUriString(taskSnapshot.getDownloadUrl().toString());
+                            seriesRef.push().setValue(nueva_serie);
+
+                            Uri uri = taskSnapshot.getDownloadUrl();
+                            Log.d(TAG, uri.toString());
+                            desactivarAnimation();
+                            Toast.makeText(ActivitiAddSerie.this,"Gracias por tu aporte!",Toast.LENGTH_SHORT).show();
                         }
+                    });
 
-                        Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
-                        intencion.putExtra("RESULT", "OK");
-                        startActivity(intencion);
-                    } else {
-                        Serie serie = new Serie(name.getText().toString(), description.getText().toString(), R.drawable.imgdefault, dia_seleccionado, estado_seleccionado, num_caps,hay_evento);
-                        db.addSerie(serie);
-
-                        ///Añadir el evento al calendario en caso de haber seleccionado la opción
-                        if(option_calendar.isChecked()){
-                            calendarPermissions();
-                            nuevoEvento(view,serie.getName(),dia_seleccionado,num_caps,db.getLastSerieId());
-                        }
-
-                        Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
-                        intencion.putExtra("RESULT", "OK");
-                        startActivity(intencion);
+                    ///Añadir el evento al calendario en caso de haber seleccionado la opción
+                    if(option_calendar.isChecked()){
+                        nuevoEvento(view,nueva_serie.getName(),dia_seleccionado,num_caps,contador);
+                        //Lanzamos la notificacion de que se ha creado el evento
+                        lanzarNotificacion(nueva_serie.getName());
                     }
 
+                    //Incrementamos en 1 el contador de la ID
+                    counterRef.setValue(contador+1);
+
+                    Intent intencion = new Intent(ActivitiAddSerie.this, FragmentSeriesMain.class);
+                    intencion.putExtra("RESULT", "OK");
+                    startActivity(intencion);
                 }
 
             }
@@ -175,17 +203,35 @@ public class ActivitiAddSerie extends AppCompatActivity {
             }
         });
 
-        db.close();
+
         dbeventos.close();
     }
 
     ///// FIN ON CREATE /////
 
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        counterRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                contador = dataSnapshot.getValue(Long.class);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(TAG,"Error al conseguir el ID");
+            }
+        });
+    }
+
     //Función para abrir el explorador y seleccionar la imagen
     public void selectImage() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(Intent.createChooser(intent, "Selecciona Imagen"), REQUEST_IMAGE_OPEN);
     }
 
@@ -197,12 +243,18 @@ public class ActivitiAddSerie extends AppCompatActivity {
             fullPhotoUri = data.getData();
 
             Log.wtf("INFO", "Resultado OK");
-            imageButton.setImageURI(fullPhotoUri);
+
+            Glide.with(this)
+                    .load(fullPhotoUri)
+                    .fitCenter()
+                    .centerCrop()
+                    .into(imageButton);
         } else {
             Log.wtf("INFO", "Resultado NOPE");
         }
     }
 
+    //Dialog para seleccionar el número de capítulos
     private void numberPickerDialog() {
         NumberPicker numberPicker = new NumberPicker(this);
         numberPicker.setMaxValue(999);
@@ -233,7 +285,7 @@ public class ActivitiAddSerie extends AppCompatActivity {
     }
 
     //Agregar un nuevo evento a Calendar mediante Content Provider
-    public void nuevoEvento(View v,String name_serie, @Nullable int day, @Nullable int num_caps, int id_serie){
+    public void nuevoEvento(View v,String name_serie, @Nullable int day, @Nullable int num_caps, long id_serie){
 
         try{
             long calID = 1;
@@ -282,29 +334,21 @@ public class ActivitiAddSerie extends AppCompatActivity {
     //Solicitar permisos de lectura y escrituda en calendario
     //en tiempo de ejecución
     private void calendarPermissions() {
-        // Here, thisActivity is the current activity
+
         if (ContextCompat.checkSelfPermission(ActivitiAddSerie.this,
                 Manifest.permission.WRITE_CALENDAR)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            // Should we show an explanation?
+
             if (ActivityCompat.shouldShowRequestPermissionRationale(ActivitiAddSerie.this,
                     Manifest.permission.WRITE_CALENDAR) || ActivityCompat.shouldShowRequestPermissionRationale(ActivitiAddSerie.this,
                     Manifest.permission.READ_CALENDAR)) {
 
-                // Show an expanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
 
             } else {
 
-                // No explanation needed, we can request the permission.
-
                 ActivityCompat.requestPermissions(ActivitiAddSerie.this, PERMISSIONS, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
 
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
             }
         }
     }
@@ -339,6 +383,16 @@ public class ActivitiAddSerie extends AppCompatActivity {
         NotificationManager notificationManager =  (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(NOTIF_ID, builder.build());
 
+    }
+
+    public void activarAnimation(){
+        animacion.setVisibility(View.VISIBLE);
+        animacion.playAnimation();
+    }
+
+    public void desactivarAnimation(){
+        animacion.pauseAnimation();
+        animacion.setVisibility(View.GONE);
     }
 
 }

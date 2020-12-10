@@ -1,33 +1,38 @@
 package android.ucam.edu.seiries;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.ucam.edu.seiries.beans.Serie;
-import android.ucam.edu.seiries.db.SeriesDB;
+import android.ucam.edu.seiries.beans.SerieBean;
+import android.ucam.edu.seiries.customs.CustomAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
+
+import com.airbnb.lottie.LottieAnimationView;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 
 
 public class FragmentListaSeries extends Fragment {
 
-    private Resources res;
-    private ArrayList<Serie> datos;
-    private SeriesDB db;
-
+    private static final String SERIES_ID ="series";
+    private static final String TAG ="FRAGMENT LISTA SERIES";
+    private ArrayList<SerieBean> datos = new ArrayList<>();
+    private DatabaseReference dbRef;
+    private DatabaseReference seriesRef;
     private ListView lstListado;
-    private AdaptadorSeries adaptadorSeries;
+    private CustomAdapter adaptadorSeries;
+    private LottieAnimationView animacion;
 
     private SeriesListener listener;
 
@@ -42,15 +47,60 @@ public class FragmentListaSeries extends Fragment {
     public void onActivityCreated(Bundle state) {
         super.onActivityCreated(state);
 
-        res = getResources();
 
-        db = new SeriesDB(getContext());
-
-        datos = db.getAllSeries();
-
+        animacion = getView().findViewById(R.id.animationLoadSeries);
+        dbRef = FirebaseDatabase.getInstance().getReference();
+        seriesRef = dbRef.child(SERIES_ID);
         lstListado = getView().findViewById(R.id.lstSeries) ;
 
-        adaptadorSeries = new AdaptadorSeries(this);
+        adaptadorSeries = new CustomAdapter(getContext(),datos);
+
+
+        seriesRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                activarAnimation();
+                datos.add(dataSnapshot.getValue(SerieBean.class));
+                adaptadorSeries.notifyDataSetChanged();
+                desactivarAnimation();
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                activarAnimation();
+                long id = dataSnapshot.getValue(SerieBean.class).getId();
+                Log.e(TAG, "El id de la serie es "+id);
+                for (SerieBean serie : datos){
+                    if(serie.getId() == id){
+                        datos.remove(serie);
+                        break;
+                    }
+                }
+                datos.add(dataSnapshot.getValue(SerieBean.class));
+                adaptadorSeries.notifyDataSetChanged();
+                desactivarAnimation();
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                activarAnimation();
+                datos.remove(dataSnapshot.getValue(SerieBean.class));
+                adaptadorSeries.notifyDataSetChanged();
+                desactivarAnimation();
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
 
         lstListado.setAdapter(adaptadorSeries);
 
@@ -58,8 +108,7 @@ public class FragmentListaSeries extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> list, View view, int pos, long id) {
                 if (listener!=null) {
-                    listener.onSerieSeleccionada((
-                            (Serie)lstListado.getAdapter().getItem(pos)));
+                    listener.onSerieSeleccionada(((SerieBean)lstListado.getAdapter().getItem(pos)));
                 }
             }
         });
@@ -74,43 +123,11 @@ public class FragmentListaSeries extends Fragment {
                 startActivity(intent);
             }
         });
-
-        db.close();
     }
 
-    
-
-    class AdaptadorSeries extends ArrayAdapter<Serie> {
-
-        Activity context;
-
-        AdaptadorSeries(Fragment context) {
-            super(context.getActivity(), R.layout.mylistview, datos);
-            this.context = context.getActivity();
-        }
-
-        public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = context.getLayoutInflater();
-            View rowView= inflater.inflate(R.layout.mylistview, null, true);
-            TextView txtTitle = rowView.findViewById(R.id.txt);
-            txtTitle.setText(datos.get(position).getName());
-
-            try {
-                ImageView imageView = rowView.findViewById(R.id.img);
-                imageView.setImageResource(datos.get(position).getImageId());
-            }
-            catch (Exception e){
-                ImageView imageView = rowView.findViewById(R.id.img);
-                imageView.setImageURI(datos.get(position).getImageUri());
-            }
-
-
-            return(rowView);
-        }
-    }
 
     public interface SeriesListener {
-        void onSerieSeleccionada(Serie c);
+        void onSerieSeleccionada(SerieBean c);
     }
 
     public void setSeriesListener(SeriesListener listener) {
@@ -118,5 +135,14 @@ public class FragmentListaSeries extends Fragment {
     }
 
 
+    public void activarAnimation(){
+        animacion.setVisibility(View.VISIBLE);
+        lstListado.setVisibility(View.GONE);
+    }
+
+    public void desactivarAnimation(){
+        animacion.setVisibility(View.GONE);
+        lstListado.setVisibility(View.VISIBLE);
+    }
 
 }

@@ -8,6 +8,7 @@
     tools:context="android.ucam.edu.seiries.LoginActivity"
     tools:layout_editor_absoluteY="81dp">
 
+
     <com.facebook.login.widget.LoginButton
         android:id="@+id/loginButton"
         android:layout_width="wrap_content"
@@ -59,20 +60,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/sertv" />
 
-    <ProgressBar
-        style="?android:attr/progressBarStyleLarge"
-        android:id="@+id/progressBarLogin"
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/animationLogin1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:indeterminate="true"
+        app:lottie_fileName="preloader.json"
+        app:lottie_imageAssetsFolder="assets"
+        app:lottie_loop="true"
         android:visibility="gone"/>
+
+
 
 </android.support.constraint.ConstraintLayout>

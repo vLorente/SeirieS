@@ -4,8 +4,8 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="agenda">Agenda</string>
-    <string name="series">Mis series</string>
+    <string name="agenda">Agenda Semanal</string>
+    <string name="series">Todas las Series</string>
     <string name="action_settings">Configuración</string>
     <string name="home">Inicio</string>
     <string name="acercaDe">Acerca De</string>
@@ -176,5 +176,13 @@
     <string name="login_not_success">No se pudo iniciar sesión</string>
     <string name="email">Correo electrónico</string>
     <string name="not_logout_google">No se pudo cerrar sesión</string>
+    <string name="estado">Estado:</string>
+    <string name="caps">Capítulos:</string>
+    <string name="event_label">¿Tiene evento en el calendario?</string>
+    <string name="sinopsis">Sinopsis</string>
+    <string name="sensores">Sensores</string>
+    <string name="cabjedi">Caballero Jedi</string>
+    <string name="sith">Lord Sith</string>
+    <string name="on">ON</string>
     //END FACEBOOK STRINGS
 </resources>

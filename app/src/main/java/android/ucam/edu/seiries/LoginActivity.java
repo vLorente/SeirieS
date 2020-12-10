@@ -6,10 +6,10 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -43,9 +43,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     private static final int SIGN_IN_CODE=777;
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener firebaseAuthListener;
-    private ProgressBar progressBar;
     private ImageView imageView;
     private TextView textView;
+    private LottieAnimationView animation1;
 
 
 
@@ -55,9 +55,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         setContentView(R.layout.activity_login);
 
         callBackManager = CallbackManager.Factory.create();
-        progressBar = findViewById(R.id.progressBarLogin);
         imageView = findViewById(R.id.imageView2);
         textView = findViewById(R.id.textView3);
+        animation1 = findViewById(R.id.animationLogin1);
 
         //GOOGLE
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -140,24 +140,16 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
     private void firebaseAuthWhitGoogle(GoogleSignInAccount signInAccount) {
-        //Progres Bar
-        progressBar.setVisibility(View.VISIBLE);
-        signInButton.setVisibility(View.GONE);
-        loginButton.setVisibility(View.GONE);
-        textView.setVisibility(View.GONE);
-        imageView.setVisibility(View.GONE);
+        //Lanzamos el Lottie
+        activarAnimacion();
 
         AuthCredential credential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(), null);
 
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                //Terminamos de mostrar la progress bar
-                progressBar.setVisibility(View.GONE);
-                signInButton.setVisibility(View.VISIBLE);
-                loginButton.setVisibility(View.VISIBLE);
-                textView.setVisibility(View.VISIBLE);
-                imageView.setVisibility(View.VISIBLE);
+                //Paramos el Lottie
+                desactivarAnimacion();
 
                 //Si ocurre algún problema durante el login en firebase
                 if(!task.isSuccessful()){
@@ -168,12 +160,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
     private void handleFacebookAccessToken(AccessToken accessToken) {
-        //Progres Bar
-        progressBar.setVisibility(View.VISIBLE);
-        signInButton.setVisibility(View.GONE);
-        loginButton.setVisibility(View.GONE);
-        textView.setVisibility(View.GONE);
-        imageView.setVisibility(View.GONE);
+        //Lanzamos el Lottie
+        activarAnimacion();
 
         //Creamos la credencial
         AuthCredential credential = FacebookAuthProvider.getCredential(accessToken.getToken());
@@ -185,15 +173,12 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 if(!task.isSuccessful()){
                     Toast.makeText(getApplicationContext(),R.string.login_error,Toast.LENGTH_SHORT).show();
                 }
-
-                //Terminamos de mostrar la progress bar
-                progressBar.setVisibility(View.GONE);
-                signInButton.setVisibility(View.VISIBLE);
-                loginButton.setVisibility(View.VISIBLE);
-                textView.setVisibility(View.VISIBLE);
-                imageView.setVisibility(View.VISIBLE);
+                //Paramos el Lottie
+                desactivarAnimacion();
             }
         });
+
+
     }
 
 
@@ -218,5 +203,24 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     protected void onStop() {
         super.onStop();
         firebaseAuth.removeAuthStateListener(firebaseAuthListener);
+    }
+
+    public void activarAnimacion(){
+        animation1.playAnimation();
+        animation1.setVisibility(View.VISIBLE);
+        signInButton.setVisibility(View.GONE);
+        loginButton.setVisibility(View.GONE);
+        textView.setVisibility(View.GONE);
+        imageView.setVisibility(View.GONE);
+    }
+
+
+    public void desactivarAnimacion(){
+        animation1.setVisibility(View.GONE);
+        signInButton.setVisibility(View.VISIBLE);
+        loginButton.setVisibility(View.VISIBLE);
+        textView.setVisibility(View.VISIBLE);
+        imageView.setVisibility(View.VISIBLE);
+        animation1.pauseAnimation();
     }
 }

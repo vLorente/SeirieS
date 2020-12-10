@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginBottom="1dp"
+    android:padding="16dp"
+    android:background="@color/colorRow">
+    
+    <RelativeLayout
+        android:id="@+id/buttonAgenda"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true">
+
+        <View
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/ic_keyboard_arrow_up_black_24dp"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/textPadre"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:textColor="@android:color/black"
+        android:textSize="20sp"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@id/buttonAgenda"
+        android:text="Este es un item con hijo"/>
+
+    <com.github.aakira.expandablelayout.ExpandableLinearLayout
+        android:id="@+id/expandableLayout"
+        android:orientation="vertical"
+        android:layout_below="@id/textPadre"
+        android:layout_width="match_parent"
+        android:layout_height="6000dp"
+        app:ael_duration="400"
+        app:ael_expanded="false"
+        app:ael_interpolator="decelerate"
+
+        >
+        <ListView
+            android:id="@+id/listViewAgenda"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:nestedScrollingEnabled="false"/>
+
+    </com.github.aakira.expandablelayout.ExpandableLinearLayout>
+</RelativeLayout>

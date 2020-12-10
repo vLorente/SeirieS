@@ -1,6 +1,6 @@
 package android.ucam.edu.seiries.customs;
 
-import android.app.Activity;
+import android.content.Context;
 import android.net.Uri;
 import android.ucam.edu.seiries.R;
 import android.ucam.edu.seiries.beans.SerieBean;
@@ -23,17 +23,16 @@ public class CustomAdapter extends ArrayAdapter<SerieBean> {
 
     private URL url;
     private Uri uri;
-    private final Activity context;
+    private final Context context;
     private ArrayList<SerieBean> series;
-    public CustomAdapter(Activity context,ArrayList<SerieBean> series) {
+    public CustomAdapter(Context context, ArrayList<SerieBean> series) {
         super(context, android.R.layout.simple_list_item_1,series);
         this.context = context;
         this.series = series;
     }
     @Override
     public View getView(int position, View view, ViewGroup parent) {
-        LayoutInflater inflater = context.getLayoutInflater();
-        View rowView= inflater.inflate(R.layout.mylistview, null, true);
+        View rowView = LayoutInflater.from(getContext()).inflate(R.layout.mylistviewrow, parent, false);
         TextView txtTitle = rowView.findViewById(R.id.txt);
 
         ImageView imageView = rowView.findViewById(R.id.img);

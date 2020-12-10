@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class SensorActivity extends AppCompatActivity {
     private Button btn_game1;
     private Button btn_proximity;
     private ArrayList<String> sensorsList;
+    private ImageButton starwarsBtn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,6 +36,7 @@ public class SensorActivity extends AppCompatActivity {
         btn_sensors = findViewById(R.id.btn_sensores);
         btn_game1 = findViewById(R.id.btn_game);
         btn_proximity = findViewById(R.id.btn_proximity);
+        starwarsBtn = findViewById(R.id.starwarsBtn);
         sensorsList = new ArrayList<>();
         //fin inicializacion y variables
 
@@ -74,6 +77,13 @@ public class SensorActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(SensorActivity.this,ProximitySensorActivity.class));
+            }
+        });
+
+        starwarsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(), LaserSaberActivity.class));
             }
         });
 

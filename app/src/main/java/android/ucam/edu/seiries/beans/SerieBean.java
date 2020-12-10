@@ -5,6 +5,7 @@ public class SerieBean {
     private String description;
     private String imageUriString;
     private int num_capitulos;
+    private long id;
     //Día que sale el capítulo
     private int dia_salida;
     //Estado de la serie
@@ -15,7 +16,9 @@ public class SerieBean {
 
     public SerieBean (){}
 
-    public SerieBean (String name, String description, String imageUriString, int dia_salida, int estadoSerie, int num_capitulos, int evento){
+    public SerieBean (long id, String name, String description, String imageUriString, int dia_salida, int estadoSerie, int num_capitulos, int evento){
+        this.id = id;
+
         this.name=name;
         this.description=description;
         this.imageUriString=imageUriString;
@@ -80,5 +83,8 @@ public class SerieBean {
 
     public void setEvento(int evento) {
         this.evento = evento;
+    }
+    public long getId() {
+        return id;
     }
 }

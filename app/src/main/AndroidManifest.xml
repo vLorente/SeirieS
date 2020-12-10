@@ -136,12 +136,6 @@
                 android:value=".MultimediaActivity" />
         </activity>
         <activity android:name=".LoginActivity" />
-        <activity android:name=".FireBaseTestActivity"
-            android:parentActivityName=".MainActivity">
-        <meta-data
-            android:name="android.support.PARENT_ACTIVITY"
-            android:value=".MainActivity" />
-        </activity>
 
         <service android:name=".firebase.MiFirebaseNotificationService">
             <intent-filter>
@@ -154,12 +148,18 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".FirebaseTestMostrar"
-            android:parentActivityName=".FireBaseTestActivity">
+        <activity
+            android:name=".MiAgenda"
+            android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".FireBaseTestActivity" />
+                android:value=".MainActivity" />
         </activity>
+        <activity android:name=".LaserSaberActivity"
+            android:parentActivityName=".SensorActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".SensorActivity" /></activity>
     </application>
 
 </manifest>
